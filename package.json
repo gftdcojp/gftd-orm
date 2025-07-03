@@ -10,6 +10,16 @@
       "import": "./dist/index.js",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./client": {
+      "import": "./dist/client.js",
+      "require": "./dist/client.js",
+      "types": "./dist/client.d.ts"
+    },
+    "./server": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
     }
   },
   "files": [
@@ -46,7 +56,12 @@
     "storage",
     "auth",
     "supabase",
-    "gftd"
+    "gftd",
+    "nextjs",
+    "react",
+    "ssr",
+    "client-server",
+    "hooks"
   ],
   "author": {
     "name": "GFTD Team",
@@ -91,6 +106,7 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/react": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "@vitest/coverage-v8": "^1.0.0",
@@ -100,6 +116,9 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.0.0",
     "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
   },
   "packageManager": "pnpm@8.15.0"
 }

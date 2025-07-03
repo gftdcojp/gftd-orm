@@ -72,6 +72,180 @@ yarn add @gftdcojp/gftd-orm
 pnpm add @gftdcojp/gftd-orm
 ```
 
+## 🔥 Next.js 完全対応
+
+GFTD-ORMは **Next.js App Router** の **サーバーサイド** と **クライアントサイド** の両方で使用できるように設計されています。
+
+### 環境別インポート
+
+```typescript
+// サーバーサイド用（Server Components, API Routes, Server Actions）
+import { createClient } from '@gftdcojp/gftd-orm/server';
+
+// クライアントサイド用（Client Components）
+import { createClient } from '@gftdcojp/gftd-orm/client';
+
+// 汎用（環境自動判定）
+import { createClient } from '@gftdcojp/gftd-orm';
+```
+
+### Server Component での使用
+
+```typescript
+// app/page.tsx
+import { createClient } from '@gftdcojp/gftd-orm/client';
+
+const client = createClient({
+  url: process.env.GFTD_URL!,
+  database: {
+    ksql: {
+      url: process.env.KSQLDB_URL!,
+      apiKey: process.env.KSQLDB_API_KEY,
+      apiSecret: process.env.KSQLDB_API_SECRET,
+    },
+    schemaRegistry: {
+      url: process.env.SCHEMA_REGISTRY_URL!,
+    },
+  },
+});
+
+export default async function Page() {
+  await client.initialize();
+  
+  const { data: users } = await client
+    .from('users')
+    .select('*')
+    .eq('status', 'active')
+    .execute();
+
+  return (
+    <div>
+      <h1>ユーザー一覧</h1>
+      {users.map(user => (
+        <div key={user.id}>{user.name}</div>
+      ))}
+    </div>
+  );
+}
+```
+
+### Client Component でのリアルタイム
+
+```typescript
+// app/realtime-dashboard.tsx
+'use client';
+
+import { useGftdOrm, useRealtimeSubscription } from '@gftdcojp/gftd-orm/hooks/useGftdOrm';
+
+export default function RealtimeDashboard() {
+  const { client, isConnected } = useGftdOrm({
+    url: process.env.NEXT_PUBLIC_GFTD_URL!,
+    database: {
+      ksql: {
+        url: process.env.NEXT_PUBLIC_KSQLDB_URL!,
+        apiKey: process.env.NEXT_PUBLIC_KSQLDB_API_KEY,
+        apiSecret: process.env.NEXT_PUBLIC_KSQLDB_API_SECRET,
+      },
+      schemaRegistry: {
+        url: process.env.NEXT_PUBLIC_SCHEMA_REGISTRY_URL!,
+      },
+    },
+    realtime: {
+      url: process.env.NEXT_PUBLIC_REALTIME_URL!,
+    },
+  });
+
+  useRealtimeSubscription(client, 'updates', 'users', 'INSERT', (payload) => {
+    console.log('新しいユーザー:', payload);
+  });
+
+  return (
+    <div>
+      <p>接続状態: {isConnected ? '接続済み' : '未接続'}</p>
+    </div>
+  );
+}
+```
+
+### API Routes での使用
+
+```typescript
+// app/api/users/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@gftdcojp/gftd-orm/client';
+
+export async function GET() {
+  const client = createClient({
+    url: process.env.GFTD_URL!,
+    database: {
+      ksql: { url: process.env.KSQLDB_URL! },
+      schemaRegistry: { url: process.env.SCHEMA_REGISTRY_URL! },
+    },
+  });
+
+  await client.initialize();
+  const { data } = await client.from('users').select('*').execute();
+  
+  return NextResponse.json({ data });
+}
+```
+
+### React Hooks
+
+```typescript
+import { useGftdOrmQuery, useGftdOrmMutation } from '@gftdcojp/gftd-orm/hooks/useGftdOrm';
+
+function UserList({ client }) {
+  // データフェッチ
+  const { data: users, loading, error, refetch } = useGftdOrmQuery(
+    client,
+    'users',
+    (query) => query.select('*').eq('status', 'active')
+  );
+
+  // データミューテーション
+  const { insert, update, remove } = useGftdOrmMutation(client, 'users');
+
+  const handleCreate = async (userData) => {
+    await insert(userData);
+    refetch(); // データ再取得
+  };
+
+  if (loading) return <div>読み込み中...</div>;
+  if (error) return <div>エラー: {error.message}</div>;
+
+  return (
+    <ul>
+      {users.map(user => (
+        <li key={user.id}>{user.name}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+### 環境変数設定
+
+```bash
+# .env.local (Next.js プロジェクト)
+
+# サーバーサイド用
+GFTD_URL=http://localhost:8088
+KSQLDB_URL=http://localhost:8088
+KSQLDB_API_KEY=your-api-key
+KSQLDB_API_SECRET=your-api-secret
+SCHEMA_REGISTRY_URL=http://localhost:8081
+REALTIME_URL=ws://localhost:8088
+
+# クライアントサイド用（NEXT_PUBLIC_ プレフィックス必須）
+NEXT_PUBLIC_GFTD_URL=http://localhost:8088
+NEXT_PUBLIC_KSQLDB_URL=http://localhost:8088
+NEXT_PUBLIC_KSQLDB_API_KEY=your-api-key
+NEXT_PUBLIC_KSQLDB_API_SECRET=your-api-secret
+NEXT_PUBLIC_SCHEMA_REGISTRY_URL=http://localhost:8081
+NEXT_PUBLIC_REALTIME_URL=ws://localhost:8088
+```
+
 ## 🚀 クイックスタート
 
 ### 1. クライアント作成と初期化
