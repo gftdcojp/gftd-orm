@@ -25,7 +25,7 @@ export * from './audit-log';
 export * from './rate-limit';
 
 // 新しい設定を使用するためのヘルパー関数
-import { coreConfig, databaseConfig, realtimeConfig, storageConfig, securityConfig } from './config';
+import { getCoreConfig, getDatabaseConfig, getRealtimeConfig, getStorageConfig, getSecurityConfig } from './config';
 
 
 import { Database, createDatabase } from './database';
@@ -67,6 +67,12 @@ export interface GftdOrmConfig {
  * 環境変数から設定を作成（設定ファイルの値を使用）
  */
 export function createConfigFromEnv(): GftdOrmConfig {
+  const coreConfig = getCoreConfig();
+  const databaseConfig = getDatabaseConfig();
+  const realtimeConfig = getRealtimeConfig();
+  const storageConfig = getStorageConfig();
+  const securityConfig = getSecurityConfig();
+  
   return {
     url: coreConfig.url,
     key: coreConfig.serviceRoleKey,

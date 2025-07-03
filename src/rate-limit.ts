@@ -2,7 +2,7 @@
  * Rate Limiting - レート制限機能
  */
 
-import { securityConfig } from './config';
+import { getSecurityConfig } from './config';
 import { AuditLogManager } from './audit-log';
 
 /**
@@ -36,9 +36,10 @@ export class RateLimitManager {
   private cleanupInterval: NodeJS.Timeout | null = null;
 
   private constructor(config?: Partial<RateLimitConfig>) {
+    const security = getSecurityConfig();
     this.config = {
-      windowMs: securityConfig.rateLimit.windowMs,
-      maxRequests: securityConfig.rateLimit.maxRequests,
+      windowMs: security.rateLimit.windowMs,
+      maxRequests: security.rateLimit.maxRequests,
       skipSuccessfulRequests: false,
       skipFailedRequests: false,
       keyGenerator: (req: any) => req.ip || req.connection.remoteAddress || 'unknown',
@@ -270,8 +271,9 @@ export class SlowDownManager {
     maxDelayMs?: number;
   }): SlowDownManager {
     if (!SlowDownManager.instance) {
+      const security = getSecurityConfig();
       SlowDownManager.instance = new SlowDownManager({
-        windowMs: config?.windowMs || securityConfig.rateLimit.windowMs,
+        windowMs: config?.windowMs || security.rateLimit.windowMs,
         delayAfter: config?.delayAfter || 5,
         delayMs: config?.delayMs || 100,
         maxDelayMs: config?.maxDelayMs || 5000,
