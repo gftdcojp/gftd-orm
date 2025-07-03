@@ -43,29 +43,29 @@ async function main() {
     },
     
     // Storage設定（オプション）
-    storage: {
-      bucketName: 'gftd-storage',
-      endpoint: 'http://localhost:9000',
-      accessKeyId: 'minioadmin',
-      secretAccessKey: 'minioadmin',
-      publicUrl: 'http://localhost:9000',
-    },
+    // storage: {
+    //   bucketName: 'gftd-storage',
+    //   endpoint: 'http://localhost:9000',
+    //   accessKeyId: 'minioadmin',
+    //   secretAccessKey: 'minioadmin',
+    //   publicUrl: 'http://localhost:9000',
+    // },
     
     // Auth設定（オプション）
-    auth: {
-      jwtSecret: 'gftd-orm-super-secret-key-for-demo',
-      allowAnonymous: true,
-      providers: {
-        email: {
-          enabled: true,
-          requireConfirmation: false,
-        },
-        google: {
-          clientId: 'demo-google-client-id',
-          clientSecret: 'demo-google-client-secret',
-        },
-      },
-    },
+    // auth: {
+    //   jwtSecret: 'gftd-orm-super-secret-key-for-demo',
+    //   allowAnonymous: true,
+    //   providers: {
+    //     email: {
+    //       enabled: true,
+    //       requireConfirmation: false,
+    //     },
+    //     google: {
+    //       clientId: 'demo-google-client-id',
+    //       clientSecret: 'demo-google-client-secret',
+    //     },
+    //   },
+    // },
   });
 
   // 初期化
@@ -244,47 +244,14 @@ async function main() {
   console.log('');
 
   // ===================================
-  // 5. Storage機能
+  // 5. Storage機能（無効化）
   // ===================================
   
   console.log('🗄️  Storage operations...');
   
   try {
-    const storage = client.getStorage();
-
-    // バケット作成
-    const bucket = await storage.bucket.create('user-files', { public: false });
-    console.log('  ✅ Bucket created:', bucket.data?.name);
-
-    // ファイルアップロード
-    const fileContent = Buffer.from('Hello, GFTD ORM Storage!');
-    const uploadResult = await storage.upload(
-      'documents/demo.txt',
-      fileContent,
-      {
-        contentType: 'text/plain',
-        metadata: { uploadedBy: 'user-001', demo: 'true' },
-      }
-    );
-    
-    console.log('  ✅ File uploaded:', uploadResult.data?.name);
-
-    // ファイル一覧取得
-    const files = await storage.list('documents/');
-    console.log('  ✅ Files listed:', files.data.length, 'files');
-
-    // ファイルダウンロード
-    const downloadResult = await storage.download('documents/demo.txt');
-    console.log('  ✅ File downloaded:', downloadResult.data?.byteLength || 0, 'bytes');
-
-    // 署名付きURL生成
-    const signedUrl = storage.createSignedUrl('documents/demo.txt', 3600);
-    console.log('  ✅ Signed URL created:', signedUrl.data?.signedUrl);
-
-    // 公開URL取得
-    const publicUrl = storage.getPublicUrl('documents/demo.txt');
-    console.log('  ✅ Public URL:', publicUrl.data.publicUrl);
-
+    // Storage機能は現在無効化されています
+    console.log('  ⚠️  Storage operations (disabled)');
   } catch (error) {
     console.log('  ⚠️  Storage operations (mocked):', error);
   }
@@ -292,63 +259,14 @@ async function main() {
   console.log('');
 
   // ===================================
-  // 6. Auth機能
+  // 6. Auth機能（無効化）
   // ===================================
   
   console.log('🔐 Authentication operations...');
   
   try {
-    const auth = client.auth;
-    if (!auth) {
-      console.log('  ⚠️  Auth module not configured');
-      return;
-    }
-
-    // ユーザー登録
-    const signUpResult = await auth.signUp({
-      email: 'demo@example.com',
-      password: 'demo-password-123',
-      options: {
-        data: { name: 'Demo User', role: 'user' },
-      },
-    });
-    
-    console.log('  ✅ User signed up:', signUpResult.data.user?.email);
-
-    // ログイン
-    const signInResult = await auth.signIn({
-      email: 'demo@example.com',
-      password: 'demo-password-123',
-    });
-    
-    console.log('  ✅ User signed in:', signInResult.data.user?.email);
-
-    // 現在のユーザー取得
-    const currentUser = auth.getUser();
-    console.log('  ✅ Current user:', currentUser?.email);
-
-    // OAuth ログイン（デモ）
-    const oauthResult = await auth.signInWithOAuth('google');
-    console.log('  ✅ OAuth sign in:', oauthResult.data.user?.email);
-
-    // ユーザー情報更新
-    const updateResult = await auth.updateUser({
-      user_metadata: { preferences: { theme: 'dark' } },
-    });
-    
-    console.log('  ✅ User updated:', updateResult.data?.email);
-
-    // トークン検証
-    const session = auth.getSession();
-    if (session) {
-      const verification = await auth.verifyToken(session.access_token);
-      console.log('  ✅ Token verified:', verification.valid);
-    }
-
-    // 管理者機能
-    const adminUsers = await auth.admin.listUsers({ page: 1, perPage: 10 });
-    console.log('  ✅ Admin users listed:', adminUsers.data.length, 'users');
-
+    // Auth機能は現在無効化されています
+    console.log('  ⚠️  Auth operations (disabled)');
   } catch (error) {
     console.log('  ⚠️  Auth operations (mocked):', error);
   }
@@ -366,8 +284,8 @@ async function main() {
     console.log('  📊 System health:');
     console.log('    - Database:', health.database.status);
     console.log('    - Realtime:', health.realtime.status);
-    console.log('    - Storage:', health.storage.status);
-    console.log('    - Auth:', health.auth.status);
+    // console.log('    - Storage:', health.storage.status);
+    // console.log('    - Auth:', health.auth.status);
   } catch (error) {
     console.log('  ⚠️  Health check failed:', error);
   }
@@ -381,11 +299,11 @@ async function main() {
   console.log('🧹 Cleaning up...');
   
   try {
-    // ログアウト
-    if (client.auth) {
-      await client.auth.signOut();
-      console.log('  ✅ User signed out');
-    }
+    // ログアウト (無効化)
+    // if (client.auth) {
+    //   await client.auth.signOut();
+    //   console.log('  ✅ User signed out');
+    // }
 
     // リアルタイム接続切断
     await client.disconnect();

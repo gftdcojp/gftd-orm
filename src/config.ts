@@ -16,35 +16,6 @@ interface CoreConfig {
   anonKey?: string;
 }
 
-interface SecurityConfig {
-  jwt: {
-    secret: string;
-    expiresIn: string;
-    algorithm: string;
-  };
-  bcrypt: {
-    rounds: number;
-  };
-  rateLimit: {
-    windowMs: number;
-    maxRequests: number;
-  };
-  session: {
-    timeoutMs: number;
-  };
-  cors: {
-    origins: string[];
-    credentials: boolean;
-  };
-  audit: {
-    enabled: boolean;
-    logFile: string;
-  };
-  logging: {
-    level: string;
-  };
-}
-
 interface DatabaseConfig {
   ksql: {
     url: string;
@@ -62,24 +33,6 @@ interface DatabaseConfig {
 interface RealtimeConfig {
   url: string;
   apiKey?: string;
-}
-
-interface StorageConfig {
-  endpoint: string;
-  accessKey: string;
-  secretKey: string;
-  bucket: string;
-}
-
-interface OAuthConfig {
-  google?: {
-    clientId: string;
-    clientSecret: string;
-  };
-  github?: {
-    clientId: string;
-    clientSecret: string;
-  };
 }
 
 /**
@@ -124,11 +77,8 @@ function getBooleanEnvVar(name: string, defaultValue: boolean): boolean {
 
 // 設定のキャッシュ
 let _coreConfig: CoreConfig | null = null;
-let _securityConfig: SecurityConfig | null = null;
 let _databaseConfig: DatabaseConfig | null = null;
 let _realtimeConfig: RealtimeConfig | null = null;
-let _storageConfig: StorageConfig | null = null;
-let _oauthConfig: OAuthConfig | null = null;
 
 /**
  * コア設定 (遅延評価)
@@ -144,42 +94,7 @@ export function getCoreConfig(): CoreConfig {
   return _coreConfig;
 }
 
-/**
- * セキュリティ設定 (遅延評価)
- */
-export function getSecurityConfig(): SecurityConfig {
-  if (!_securityConfig) {
-    _securityConfig = {
-      jwt: {
-        secret: getEnvVar('GFTD_JWT_SECRET'),
-        expiresIn: getOptionalEnvVar('GFTD_JWT_EXPIRES_IN', '1h') || '1h',
-        algorithm: getOptionalEnvVar('GFTD_JWT_ALGORITHM', 'HS256') || 'HS256',
-      },
-      bcrypt: {
-        rounds: getNumberEnvVar('GFTD_BCRYPT_ROUNDS', 12),
-      },
-      rateLimit: {
-        windowMs: getNumberEnvVar('GFTD_RATE_LIMIT_WINDOW_MS', 900000), // 15分
-        maxRequests: getNumberEnvVar('GFTD_RATE_LIMIT_MAX_REQUESTS', 100),
-      },
-      session: {
-        timeoutMs: getNumberEnvVar('GFTD_SESSION_TIMEOUT_MS', 3600000), // 1時間
-      },
-      cors: {
-        origins: getOptionalEnvVar('GFTD_CORS_ORIGINS', 'http://localhost:3000')?.split(',') || [],
-        credentials: getBooleanEnvVar('GFTD_CORS_CREDENTIALS', true),
-      },
-      audit: {
-        enabled: getBooleanEnvVar('GFTD_AUDIT_LOG_ENABLED', true),
-        logFile: getOptionalEnvVar('GFTD_AUDIT_LOG_FILE', './logs/audit.log') || './logs/audit.log',
-      },
-      logging: {
-        level: getOptionalEnvVar('GFTD_LOG_LEVEL', 'info') || 'info',
-      },
-    };
-  }
-  return _securityConfig;
-}
+
 
 /**
  * データベース設定 (遅延評価)
@@ -216,43 +131,7 @@ export function getRealtimeConfig(): RealtimeConfig {
   return _realtimeConfig;
 }
 
-/**
- * ストレージ設定 (遅延評価)
- */
-export function getStorageConfig(): StorageConfig {
-  if (!_storageConfig) {
-    _storageConfig = {
-      endpoint: getEnvVar('GFTD_STORAGE_ENDPOINT', 'http://localhost:9000'),
-      accessKey: getEnvVar('GFTD_STORAGE_ACCESS_KEY', 'minioadmin'),
-      secretKey: getEnvVar('GFTD_STORAGE_SECRET_KEY', 'minioadmin'),
-      bucket: getEnvVar('GFTD_STORAGE_BUCKET', 'uploads'),
-    };
-  }
-  return _storageConfig;
-}
 
-/**
- * OAuth設定 (遅延評価)
- */
-export function getOAuthConfig(): OAuthConfig {
-  if (!_oauthConfig) {
-    _oauthConfig = {
-      google: getOptionalEnvVar('GFTD_GOOGLE_CLIENT_ID') && getOptionalEnvVar('GFTD_GOOGLE_CLIENT_SECRET')
-        ? {
-            clientId: getEnvVar('GFTD_GOOGLE_CLIENT_ID'),
-            clientSecret: getEnvVar('GFTD_GOOGLE_CLIENT_SECRET'),
-          }
-        : undefined,
-      github: getOptionalEnvVar('GFTD_GITHUB_CLIENT_ID') && getOptionalEnvVar('GFTD_GITHUB_CLIENT_SECRET')
-        ? {
-            clientId: getEnvVar('GFTD_GITHUB_CLIENT_ID'),
-            clientSecret: getEnvVar('GFTD_GITHUB_CLIENT_SECRET'),
-          }
-        : undefined,
-    };
-  }
-  return _oauthConfig;
-}
 
 // 遅延評価を維持するため、直接的な設定エクスポートは削除
 // 各設定は get*Config() 関数を通してアクセスしてください
@@ -261,31 +140,21 @@ export function getOAuthConfig(): OAuthConfig {
  * 設定の検証
  */
 export function validateConfig(): void {
-  const security = getSecurityConfig();
+  // 基本的な設定の存在確認
+  const core = getCoreConfig();
+  const database = getDatabaseConfig();
+  const realtime = getRealtimeConfig();
   
-  // JWT秘密キーの長さチェック
-  if (security.jwt.secret.length < 32) {
-    throw new Error('JWT secret must be at least 32 characters long');
+  if (!core.url) {
+    throw new Error('GFTD_URL is required');
   }
-
-  // サポートされているJWTアルゴリズムチェック
-  const supportedAlgorithms = ['HS256', 'HS384', 'HS512'];
-  if (!supportedAlgorithms.includes(security.jwt.algorithm)) {
-    throw new Error(`Unsupported JWT algorithm: ${security.jwt.algorithm}`);
+  
+  if (!database.ksql.url) {
+    throw new Error('GFTD_DB_URL is required');
   }
-
-  // bcryptラウンド数の妥当性チェック
-  if (security.bcrypt.rounds < 10 || security.bcrypt.rounds > 15) {
-    throw new Error('bcrypt rounds must be between 10 and 15');
-  }
-
-  // レート制限の妥当性チェック
-  if (security.rateLimit.windowMs < 60000) { // 1分未満
-    throw new Error('Rate limit window must be at least 60 seconds');
-  }
-
-  if (security.rateLimit.maxRequests < 1) {
-    throw new Error('Rate limit max requests must be at least 1');
+  
+  if (!database.schemaRegistry.url) {
+    throw new Error('GFTD_SCHEMA_REGISTRY_URL is required');
   }
 }
 

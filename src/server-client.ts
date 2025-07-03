@@ -4,8 +4,6 @@
 
 import { Database } from './database';
 import { Realtime } from './realtime';
-import { Storage, StorageConfig } from './storage';
-import { Auth, AuthConfig } from './auth';
 import { KsqlDbConfig, SchemaRegistryConfig } from './types';
 
 export interface ServerClientConfig {
@@ -25,10 +23,6 @@ export interface ServerClientConfig {
     maxReconnectAttempts?: number;
   };
   
-  // サーバーでは全機能が使用可能
-  storage?: StorageConfig;
-  auth?: AuthConfig;
-  
   global?: {
     headers?: Record<string, string>;
     schema?: string;
@@ -42,8 +36,6 @@ export class ServerClient {
   private config: ServerClientConfig;
   private _database: Database | null = null;
   private _realtime: Realtime | null = null;
-  private _storage: Storage | null = null;
-  private _auth: Auth | null = null;
   private initialized = false;
 
   constructor(config: ServerClientConfig) {
@@ -74,26 +66,6 @@ export class ServerClient {
   }
 
   /**
-   * ストレージクライアントを取得
-   */
-  get storage(): Storage {
-    if (!this._storage) {
-      throw new Error('Storage not initialized. Call initialize() first.');
-    }
-    return this._storage;
-  }
-
-  /**
-   * 認証クライアントを取得
-   */
-  get auth(): Auth {
-    if (!this._auth) {
-      throw new Error('Auth not initialized. Call initialize() first.');
-    }
-    return this._auth;
-  }
-
-  /**
    * クライアントを初期化
    */
   async initialize(): Promise<void> {
@@ -114,20 +86,6 @@ export class ServerClient {
         this._realtime = createRealtime(this.config.realtime);
       }
 
-      // Storage初期化（サーバー版）
-      if (this.config.storage) {
-        const { createStorage } = await import('./storage');
-        this._storage = createStorage(this.config.storage);
-        await this._storage.initialize();
-      }
-
-      // Auth初期化（サーバー版）
-      if (this.config.auth) {
-        const { createAuth } = await import('./auth');
-        this._auth = createAuth(this.config.auth);
-        await this._auth.initialize();
-      }
-
       this.initialized = true;
     } catch (error) {
       console.error('Failed to initialize server client:', error);
@@ -142,15 +100,7 @@ export class ServerClient {
     return this.database.from<T>(table);
   }
 
-  /**
-   * ストレージアクセス
-   */
-  getStorage() {
-    if (!this._storage) {
-      throw new Error('Storage module not configured. Please provide storage config when creating the client.');
-    }
-    return this._storage;
-  }
+
 
   /**
    * リアルタイムチャンネル
@@ -176,15 +126,11 @@ export class ServerClient {
     const results = await Promise.allSettled([
       this.database.health(),
       this._realtime ? Promise.resolve({ status: 'ok' as const, details: this._realtime.getConnectionStatus() }) : Promise.resolve({ status: 'disabled' as const }),
-      this._storage ? Promise.resolve({ status: 'ok' as const }) : Promise.resolve({ status: 'disabled' as const }),
-      this._auth ? Promise.resolve({ status: 'ok' as const }) : Promise.resolve({ status: 'disabled' as const }),
     ]);
 
     return {
       database: results[0].status === 'fulfilled' ? results[0].value : { status: 'error', details: (results[0] as PromiseRejectedResult).reason },
       realtime: results[1].status === 'fulfilled' ? results[1].value : { status: 'error' },
-      storage: results[2].status === 'fulfilled' ? results[2].value : { status: 'error' },
-      auth: results[3].status === 'fulfilled' ? results[3].value : { status: 'error' },
     };
   }
 

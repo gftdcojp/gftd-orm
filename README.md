@@ -2,9 +2,9 @@
 
 Enterprise-grade real-time data platform with ksqlDB, inspired by Supabase architecture
 
-🚀 **Unified platform for Database, Realtime, Storage, Auth**
+🚀 **Unified platform for Database and Realtime**
 
-An enterprise-grade real-time data platform that provides **Supabase-like unified API** for Database (type-safe ORM), Realtime (WebSocket), Storage (S3 compatible), and Auth (JWT authentication) built on Confluent Schema Registry + ksqlDB foundation.
+An enterprise-grade real-time data platform that provides **Supabase-like unified API** for Database (type-safe ORM) and Realtime (WebSocket) built on Confluent Schema Registry + ksqlDB foundation.
 
 ## 🎯 Features
 
@@ -21,40 +21,25 @@ An enterprise-grade real-time data platform that provides **Supabase-like unifie
 - **Presence Features** - User online status management
 - **Broadcast** - Real-time communication
 
-### 🗄️ Storage
-- **S3 Compatible** - MinIO/AWS S3 support
-- **File Management** - Upload/Download/Delete operations
-- **Signed URLs** - Secure file access
-- **Bucket Management** - Multiple storage management
-
-### 🔐 Auth
-- **JWT Authentication** - Secure token-based authentication
-- **OAuth Support** - Google, GitHub and other providers
-- **User Management** - Registration/Login/Password management
-- **Session Management** - Automatic refresh support
-
 ### 🛡️ Security
-- **Comprehensive Security** - Enterprise-grade security features
 - **SQL Injection Prevention** - Parameterized queries and escape processing
-- **Rate Limiting & DDoS Protection** - Multi-layered access control
 - **Audit Logging** - Detailed recording of all activities
-- **Encryption & Hashing** - bcrypt password protection
 - **CSRF/XSS Protection** - Cross-site attack prevention
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│ GFTD ORM Client │    │ Database        │    │ Realtime        │    │ Storage         │
-│ (Supabase-like) │    │ (ksqlDB + SR)   │    │ (WebSocket)     │    │ (S3 compatible) │
-└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │                       │
-         └───────────────────────┼───────────────────────┼───────────────────────┘
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│ GFTD ORM Client │    │ Database        │    │ Realtime        │
+│ (Supabase-like) │    │ (ksqlDB + SR)   │    │ (WebSocket)     │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         └───────────────────────┼───────────────────────┘
                                  │                       │                       
-┌─────────────────┐              │              ┌─────────────────┐    ┌─────────────────┐
-│ Auth            │              │              │ Kafka Topics    │    │ File Storage    │
-│ (JWT)           │              │              │ (Events)        │    │ (Buckets)       │
-└─────────────────┘              │              └─────────────────┘    └─────────────────┘
+                                 │              ┌─────────────────┐
+                                 │              │ Kafka Topics    │
+                                 │              │ (Events)        │
+                                 │              └─────────────────┘
                                  │                       
                         ┌─────────────────┐
                         │ Schema Registry │

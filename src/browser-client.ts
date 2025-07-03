@@ -27,17 +27,6 @@ export interface BrowserClientConfig {
     reconnectInterval?: number;
     maxReconnectAttempts?: number;
   };
-  
-  // ブラウザではストレージとAuthは制限付き
-  storage?: {
-    url: string;
-    bucketName: string;
-  };
-  
-  auth?: {
-    url: string;
-    // ブラウザではJWTの検証のみ（署名は不可）
-  };
 }
 
 /**
@@ -145,8 +134,6 @@ export class BrowserClient {
     return {
       database: results[0].status === 'fulfilled' ? results[0].value : { status: 'error', details: (results[0] as PromiseRejectedResult).reason },
       realtime: results[1].status === 'fulfilled' ? results[1].value : { status: 'error' },
-      storage: { status: 'not_available' as const },
-      auth: { status: 'not_available' as const },
     };
   }
 

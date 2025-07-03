@@ -28,9 +28,9 @@ async function websocketTest() {
           },
         },
       },
-      auth: {
-        jwtSecret: 'websocket-test-jwt-secret-key-minimum-32-characters-long',
-      },
+      // auth: {
+      //   jwtSecret: 'websocket-test-jwt-secret-key-minimum-32-characters-long',
+      // },
     });
 
     // 2. 初期化

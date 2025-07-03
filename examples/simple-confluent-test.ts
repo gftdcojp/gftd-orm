@@ -27,9 +27,9 @@ async function simpleConfluentTest() {
           },
         },
       },
-      auth: {
-        jwtSecret: 'simple-test-jwt-secret-key-minimum-32-characters-long',
-      },
+      // auth: {
+      //   jwtSecret: 'simple-test-jwt-secret-key-minimum-32-characters-long',
+      // },
     });
 
     // 2. 初期化
@@ -42,14 +42,14 @@ async function simpleConfluentTest() {
     const health = await client.health();
     console.log('📊 Health status:');
     console.log('  - Database:', health.database.status);
-    console.log('  - Auth:', health.auth.status);
+    // console.log('  - Auth:', health.auth.status);
     
     if (health.realtime) {
       console.log('  - Realtime:', health.realtime.status);
     }
-    if (health.storage) {
-      console.log('  - Storage:', health.storage.status);
-    }
+    // if (health.storage) {
+    //   console.log('  - Storage:', health.storage.status);
+    // }
 
     // 4. 基本的なSQL実行テスト
     console.log('\n🔍 Testing basic SQL execution...');

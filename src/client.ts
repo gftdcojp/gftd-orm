@@ -34,35 +34,6 @@ export interface GftdOrmConfig {
     maxReconnectAttempts?: number;
   };
   
-  // Storage 設定  
-  storage?: {
-    bucketName: string;
-    endpoint: string;
-    accessKey?: string;
-    secretKey?: string;
-  };
-  
-  // Auth 設定
-  auth?: {
-    jwtSecret: string;
-    jwtExpiresIn?: string;
-    allowAnonymous?: boolean;
-    providers?: {
-      google?: {
-        clientId: string;
-        clientSecret: string;
-      };
-      github?: {
-        clientId: string;
-        clientSecret: string;
-      };
-      email?: {
-        enabled: boolean;
-        requireConfirmation?: boolean;
-      };
-    };
-  };
-  
   // 全般設定
   global?: {
     headers?: Record<string, string>;
@@ -77,8 +48,6 @@ export class GftdOrmClient {
   private config: GftdOrmConfig;
   private _database: any = null;
   private _realtime: any = null;
-  private _storage: any = null;
-  private _auth: any = null;
   private initialized = false;
 
   constructor(config: GftdOrmConfig) {
@@ -103,26 +72,6 @@ export class GftdOrmClient {
       throw new Error('Realtime not initialized. Call initialize() first.');
     }
     return this._realtime;
-  }
-
-  /**
-   * ストレージクライアントを取得
-   */
-  get storage(): any {
-    if (!this._storage) {
-      throw new Error('Storage not initialized. Call initialize() first.');
-    }
-    return this._storage;
-  }
-
-  /**
-   * 認証クライアントを取得
-   */
-  get auth(): any {
-    if (!this._auth) {
-      throw new Error('Auth not initialized. Call initialize() first.');
-    }
-    return this._auth;
   }
 
   /**
@@ -164,20 +113,6 @@ export class GftdOrmClient {
       const { createRealtime } = await import('./realtime');
       this._realtime = createRealtime(this.config.realtime);
     }
-
-    // Storage初期化
-    if (this.config.storage) {
-      const { createStorage } = await import('./storage');
-      this._storage = createStorage(this.config.storage);
-      await this._storage.initialize();
-    }
-
-    // Auth初期化
-    if (this.config.auth) {
-      const { createAuth } = await import('./auth');
-      this._auth = createAuth(this.config.auth);
-      await this._auth.initialize();
-    }
   }
 
   /**
@@ -197,20 +132,6 @@ export class GftdOrmClient {
       const { createRealtime } = await import('./realtime');
       this._realtime = createRealtime(this.config.realtime);
     }
-
-    // Storage初期化（クライアント版）
-    if (this.config.storage) {
-      const { createStorage } = await import('./storage');
-      this._storage = createStorage(this.config.storage);
-      await this._storage.initialize();
-    }
-
-    // Auth初期化（クライアント版）
-    if (this.config.auth) {
-      const { createAuth } = await import('./auth');
-      this._auth = createAuth(this.config.auth);
-      await this._auth.initialize();
-    }
   }
 
   /**
@@ -218,16 +139,6 @@ export class GftdOrmClient {
    */
   from<T = any>(table: string): any {
     return this.database.from(table);
-  }
-
-  /**
-   * ストレージアクセス（Supabaseライク）
-   */
-  getStorage() {
-    if (!this._storage) {
-      throw new Error('Storage module not configured. Please provide storage config when creating the client.');
-    }
-    return this._storage;
   }
 
   /**
@@ -254,15 +165,11 @@ export class GftdOrmClient {
     const results = await Promise.allSettled([
       this.database.health(),
       this._realtime ? Promise.resolve({ status: 'ok' as const, details: this._realtime.getConnectionStatus() }) : Promise.resolve({ status: 'disabled' as const }),
-      this._storage ? Promise.resolve({ status: 'ok' as const }) : Promise.resolve({ status: 'disabled' as const }),
-      this._auth ? Promise.resolve({ status: 'ok' as const }) : Promise.resolve({ status: 'disabled' as const }),
     ]);
 
     return {
       database: results[0].status === 'fulfilled' ? results[0].value : { status: 'error', details: (results[0] as PromiseRejectedResult).reason },
       realtime: results[1].status === 'fulfilled' ? results[1].value : { status: 'error' },
-      storage: results[2].status === 'fulfilled' ? results[2].value : { status: 'error' },
-      auth: results[3].status === 'fulfilled' ? results[3].value : { status: 'error' },
     };
   }
 

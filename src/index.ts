@@ -23,7 +23,7 @@ export * from './audit-log';
 export * from './rate-limit';
 
 // 新しい設定を使用するためのヘルパー関数
-import { getCoreConfig, getDatabaseConfig, getRealtimeConfig, getStorageConfig, getSecurityConfig } from './config';
+import { getCoreConfig, getDatabaseConfig, getRealtimeConfig } from './config';
 
 
 import { Database, createDatabase } from './database';
@@ -133,15 +133,7 @@ export class GftdOrmClient {
     return this.database.from<T>(table);
   }
 
-  /**
-   * ストレージアクセス（Supabaseライク）
-   */
-  getStorage() {
-    if (!this.storage) {
-      throw new Error('Storage module not configured. Please provide storage config when creating the client.');
-    }
-    return this.storage;
-  }
+
 
   /**
    * リアルタイムチャンネル（Supabaseライク）
@@ -167,15 +159,11 @@ export class GftdOrmClient {
     const results = await Promise.allSettled([
       this.database.health(),
       this.realtime ? Promise.resolve({ status: 'ok' as const, details: this.realtime.getConnectionStatus() }) : Promise.resolve({ status: 'disabled' as const }),
-      this.storage ? Promise.resolve({ status: 'ok' as const }) : Promise.resolve({ status: 'disabled' as const }),
-      this.auth ? Promise.resolve({ status: 'ok' as const }) : Promise.resolve({ status: 'disabled' as const }),
     ]);
 
     return {
       database: results[0].status === 'fulfilled' ? results[0].value : { status: 'error', details: (results[0] as PromiseRejectedResult).reason },
       realtime: results[1].status === 'fulfilled' ? results[1].value : { status: 'error' },
-      storage: results[2].status === 'fulfilled' ? results[2].value : { status: 'error' },
-      auth: results[3].status === 'fulfilled' ? results[3].value : { status: 'error' },
     };
   }
 
