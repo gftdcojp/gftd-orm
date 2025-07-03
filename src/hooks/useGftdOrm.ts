@@ -1,9 +1,9 @@
 /**
- * Next.js用のReactフック
+ * Next.js用のReactフック（ブラウザ専用）
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { GftdOrmClient, GftdOrmConfig } from '../client';
+import { BrowserClient, BrowserClientConfig } from '../browser-client';
 
 export interface UseGftdOrmOptions {
   autoConnect?: boolean;
@@ -11,7 +11,7 @@ export interface UseGftdOrmOptions {
 }
 
 export interface UseGftdOrmResult {
-  client: GftdOrmClient | null;
+  client: BrowserClient | null;
   isConnected: boolean;
   isLoading: boolean;
   error: Error | null;
@@ -24,14 +24,14 @@ export interface UseGftdOrmResult {
  * GFTD-ORMクライアントのReactフック
  */
 export function useGftdOrm(
-  config: GftdOrmConfig,
+  config: BrowserClientConfig,
   options: UseGftdOrmOptions = {}
 ): UseGftdOrmResult {
-  const [client, setClient] = useState<GftdOrmClient | null>(null);
+  const [client, setClient] = useState<BrowserClient | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const clientRef = useRef<GftdOrmClient | null>(null);
+  const clientRef = useRef<BrowserClient | null>(null);
 
   const connect = useCallback(async () => {
     if (clientRef.current) return;
@@ -40,7 +40,7 @@ export function useGftdOrm(
       setIsLoading(true);
       setError(null);
 
-      const newClient = new GftdOrmClient(config);
+      const newClient = new BrowserClient(config);
       await newClient.initialize();
 
       clientRef.current = newClient;
@@ -94,7 +94,7 @@ export function useGftdOrm(
  * リアルタイムサブスクリプション用のフック
  */
 export function useRealtimeSubscription(
-  client: GftdOrmClient | null,
+  client: BrowserClient | null,
   channel: string,
   table: string,
   event: 'INSERT' | 'UPDATE' | 'DELETE' | '*',

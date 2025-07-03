@@ -11,15 +11,20 @@
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./client": {
-      "import": "./dist/client.js",
-      "require": "./dist/client.js",
-      "types": "./dist/client.d.ts"
+    "./browser": {
+      "import": "./dist/browser-client.js",
+      "require": "./dist/browser-client.js",
+      "types": "./dist/browser-client.d.ts"
     },
     "./server": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/server-client.js",
+      "require": "./dist/server-client.js",
+      "types": "./dist/server-client.d.ts"
+    },
+    "./hooks": {
+      "import": "./dist/hooks/useGftdOrm.js",
+      "require": "./dist/hooks/useGftdOrm.js",
+      "types": "./dist/hooks/useGftdOrm.d.ts"
     }
   },
   "files": [

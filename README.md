@@ -76,36 +76,53 @@ pnpm add @gftdcojp/gftd-orm
 
 GFTD-ORMは **Next.js App Router** の **サーバーサイド** と **クライアントサイド** の両方で使用できるように設計されています。
 
-### 環境別インポート
+### 環境別インポート（Supabaseライク）
 
 ```typescript
-// サーバーサイド用（Server Components, API Routes, Server Actions）
-import { createClient } from '@gftdcojp/gftd-orm/server';
+// ブラウザ専用（Client Components）- セキュア、軽量
+import { createBrowserClient } from '@gftdcojp/gftd-orm/browser';
 
-// クライアントサイド用（Client Components）
-import { createClient } from '@gftdcojp/gftd-orm/client';
+// サーバー専用（Server Components, API Routes, Server Actions）- 全機能
+import { createServerClient } from '@gftdcojp/gftd-orm/server';
 
-// 汎用（環境自動判定）
+// 汎用（従来互換、非推奨）
 import { createClient } from '@gftdcojp/gftd-orm';
 ```
+
+**🔥 重要：環境別クライアントの利点**
+
+- **セキュリティ** - ブラウザに機密情報（API秘密鍵など）が送信されない
+- **バンドルサイズ最適化** - 環境に不要な依存関係を除外
+- **型安全性** - 環境ごとに適切なAPIのみ提供
+- **明示性** - 開発者が意図的に環境を選択
 
 ### Server Component での使用
 
 ```typescript
 // app/page.tsx
-import { createClient } from '@gftdcojp/gftd-orm/client';
+import { createServerClient } from '@gftdcojp/gftd-orm/server';
 
-const client = createClient({
+const client = createServerClient({
   url: process.env.GFTD_URL!,
   database: {
     ksql: {
       url: process.env.KSQLDB_URL!,
       apiKey: process.env.KSQLDB_API_KEY,
-      apiSecret: process.env.KSQLDB_API_SECRET,
+      apiSecret: process.env.KSQLDB_API_SECRET, // サーバーでのみ使用可能
     },
     schemaRegistry: {
       url: process.env.SCHEMA_REGISTRY_URL!,
+      auth: { user: 'admin', pass: 'admin' }, // サーバーでのみ使用可能
     },
+  },
+  storage: {
+    bucketName: 'uploads',
+    endpoint: process.env.S3_ENDPOINT!,
+    accessKeyId: process.env.S3_ACCESS_KEY!, // サーバーでのみ使用可能
+    secretAccessKey: process.env.S3_SECRET_KEY!, // サーバーでのみ使用可能
+  },
+  auth: {
+    jwtSecret: process.env.JWT_SECRET!, // サーバーでのみ使用可能
   },
 });
 
@@ -135,33 +152,54 @@ export default async function Page() {
 // app/realtime-dashboard.tsx
 'use client';
 
-import { useGftdOrm, useRealtimeSubscription } from '@gftdcojp/gftd-orm/hooks/useGftdOrm';
+import { useState, useEffect } from 'react';
+import { createBrowserClient } from '@gftdcojp/gftd-orm/browser';
+
+const client = createBrowserClient({
+  url: process.env.NEXT_PUBLIC_GFTD_URL!,
+  database: {
+    ksql: {
+      url: process.env.NEXT_PUBLIC_KSQLDB_URL!,
+      apiKey: process.env.NEXT_PUBLIC_KSQLDB_API_KEY, // 公開APIキーのみ
+      // apiSecret は使用不可（セキュリティ）
+    },
+    schemaRegistry: {
+      url: process.env.NEXT_PUBLIC_SCHEMA_REGISTRY_URL!,
+      apiKey: process.env.NEXT_PUBLIC_SCHEMA_REGISTRY_API_KEY, // 公開APIキーのみ
+    },
+  },
+  realtime: {
+    url: process.env.NEXT_PUBLIC_REALTIME_URL!,
+    apiKey: process.env.NEXT_PUBLIC_REALTIME_API_KEY, // 公開APIキーのみ
+  },
+  // storage, authは制限付き（URLのみ）
+});
 
 export default function RealtimeDashboard() {
-  const { client, isConnected } = useGftdOrm({
-    url: process.env.NEXT_PUBLIC_GFTD_URL!,
-    database: {
-      ksql: {
-        url: process.env.NEXT_PUBLIC_KSQLDB_URL!,
-        apiKey: process.env.NEXT_PUBLIC_KSQLDB_API_KEY,
-        apiSecret: process.env.NEXT_PUBLIC_KSQLDB_API_SECRET,
-      },
-      schemaRegistry: {
-        url: process.env.NEXT_PUBLIC_SCHEMA_REGISTRY_URL!,
-      },
-    },
-    realtime: {
-      url: process.env.NEXT_PUBLIC_REALTIME_URL!,
-    },
-  });
+  const [isConnected, setIsConnected] = useState(false);
+  const [users, setUsers] = useState([]);
 
-  useRealtimeSubscription(client, 'updates', 'users', 'INSERT', (payload) => {
-    console.log('新しいユーザー:', payload);
-  });
+  useEffect(() => {
+    const initialize = async () => {
+      await client.initialize();
+      setIsConnected(true);
+
+      // リアルタイム監視
+      const channel = client.channel('user-updates');
+      channel.onTable('users', 'INSERT', (payload) => {
+        console.log('新しいユーザー:', payload);
+        setUsers(prev => [...prev, payload.new]);
+      });
+      await channel.connect();
+    };
+
+    initialize();
+  }, []);
 
   return (
     <div>
       <p>接続状態: {isConnected ? '接続済み' : '未接続'}</p>
+      <p>ユーザー数: {users.length}</p>
     </div>
   );
 }
@@ -172,14 +210,21 @@ export default function RealtimeDashboard() {
 ```typescript
 // app/api/users/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@gftdcojp/gftd-orm/client';
+import { createServerClient } from '@gftdcojp/gftd-orm/server';
 
 export async function GET() {
-  const client = createClient({
+  const client = createServerClient({
     url: process.env.GFTD_URL!,
     database: {
-      ksql: { url: process.env.KSQLDB_URL! },
-      schemaRegistry: { url: process.env.SCHEMA_REGISTRY_URL! },
+      ksql: {
+        url: process.env.KSQLDB_URL!,
+        apiKey: process.env.KSQLDB_API_KEY,
+        apiSecret: process.env.KSQLDB_API_SECRET, // サーバーでのみ安全
+      },
+      schemaRegistry: {
+        url: process.env.SCHEMA_REGISTRY_URL!,
+        auth: { user: 'admin', pass: 'admin' }, // サーバーでのみ安全
+      },
     },
   });
 
@@ -190,38 +235,33 @@ export async function GET() {
 }
 ```
 
-### React Hooks
+### React Hooks（現在開発中）
 
 ```typescript
-import { useGftdOrmQuery, useGftdOrmMutation } from '@gftdcojp/gftd-orm/hooks/useGftdOrm';
+// 将来のリリースで提供予定
+import { useBrowserClient, useRealtimeSubscription } from '@gftdcojp/gftd-orm/hooks';
 
-function UserList({ client }) {
-  // データフェッチ
-  const { data: users, loading, error, refetch } = useGftdOrmQuery(
-    client,
-    'users',
-    (query) => query.select('*').eq('status', 'active')
-  );
+function UserList() {
+  const { client, isConnected } = useBrowserClient({
+    url: process.env.NEXT_PUBLIC_GFTD_URL!,
+    database: {
+      ksql: { url: process.env.NEXT_PUBLIC_KSQLDB_URL! },
+      schemaRegistry: { url: process.env.NEXT_PUBLIC_SCHEMA_REGISTRY_URL! },
+    },
+  });
 
-  // データミューテーション
-  const { insert, update, remove } = useGftdOrmMutation(client, 'users');
-
-  const handleCreate = async (userData) => {
-    await insert(userData);
-    refetch(); // データ再取得
-  };
-
-  if (loading) return <div>読み込み中...</div>;
-  if (error) return <div>エラー: {error.message}</div>;
+  // リアルタイム監視
+  useRealtimeSubscription(client, 'users', 'INSERT', (payload) => {
+    console.log('新しいユーザー:', payload);
+  });
 
   return (
-    <ul>
-      {users.map(user => (
-        <li key={user.id}>{user.name}</li>
-      ))}
-    </ul>
+    <div>
+      <p>接続状態: {isConnected ? '接続済み' : '未接続'}</p>
+    </div>
   );
 }
+```
 ```
 
 ### 環境変数設定
@@ -229,22 +269,34 @@ function UserList({ client }) {
 ```bash
 # .env.local (Next.js プロジェクト)
 
-# サーバーサイド用
+# 🔒 サーバー専用（機密情報）
 GFTD_URL=http://localhost:8088
 KSQLDB_URL=http://localhost:8088
 KSQLDB_API_KEY=your-api-key
-KSQLDB_API_SECRET=your-api-secret
+KSQLDB_API_SECRET=your-secret-key           # ⚠️ 機密情報
 SCHEMA_REGISTRY_URL=http://localhost:8081
-REALTIME_URL=ws://localhost:8088
+SCHEMA_REGISTRY_USER=admin                  # ⚠️ 機密情報
+SCHEMA_REGISTRY_PASSWORD=admin              # ⚠️ 機密情報
+S3_ENDPOINT=http://localhost:9000
+S3_ACCESS_KEY=minioadmin                    # ⚠️ 機密情報
+S3_SECRET_KEY=minioadmin                    # ⚠️ 機密情報
+JWT_SECRET=your-super-secret-jwt-key        # ⚠️ 機密情報
 
-# クライアントサイド用（NEXT_PUBLIC_ プレフィックス必須）
+# 🌍 クライアント公開用（NEXT_PUBLIC_ プレフィックス）
 NEXT_PUBLIC_GFTD_URL=http://localhost:8088
 NEXT_PUBLIC_KSQLDB_URL=http://localhost:8088
-NEXT_PUBLIC_KSQLDB_API_KEY=your-api-key
-NEXT_PUBLIC_KSQLDB_API_SECRET=your-api-secret
+NEXT_PUBLIC_KSQLDB_API_KEY=your-public-api-key    # 📢 公開用キー
 NEXT_PUBLIC_SCHEMA_REGISTRY_URL=http://localhost:8081
+NEXT_PUBLIC_SCHEMA_REGISTRY_API_KEY=your-public-schema-key  # 📢 公開用キー
 NEXT_PUBLIC_REALTIME_URL=ws://localhost:8088
+NEXT_PUBLIC_REALTIME_API_KEY=your-public-realtime-key      # 📢 公開用キー
 ```
+
+**🔐 セキュリティ重要事項：**
+
+- `NEXT_PUBLIC_*` 変数はブラウザに送信されるため、**公開用APIキー**のみ設定
+- `API_SECRET`, `PASSWORD`, `JWT_SECRET` などは**絶対に**`NEXT_PUBLIC_*`にしない
+- ブラウザクライアントは読み取り専用操作のみ、書き込みはサーバー経由を推奨
 
 ## 🚀 クイックスタート
 
