@@ -104,25 +104,29 @@ import { createServerClient } from '@gftdcojp/gftd-orm/server';
 
 const client = createServerClient({
   url: process.env.GFTD_URL!,
+  key: process.env.GFTD_SERVICE_ROLE_KEY!, // サーバーでのみ使用可能
   database: {
     ksql: {
-      url: process.env.KSQLDB_URL!,
-      apiKey: process.env.KSQLDB_API_KEY,
-      apiSecret: process.env.KSQLDB_API_SECRET, // サーバーでのみ使用可能
+      url: process.env.GFTD_DB_URL!,
+      apiKey: process.env.GFTD_DB_API_KEY,
+      apiSecret: process.env.GFTD_DB_API_SECRET, // サーバーでのみ使用可能
     },
     schemaRegistry: {
-      url: process.env.SCHEMA_REGISTRY_URL!,
-      auth: { user: 'admin', pass: 'admin' }, // サーバーでのみ使用可能
+      url: process.env.GFTD_SCHEMA_REGISTRY_URL!,
+      auth: { 
+        user: process.env.GFTD_SCHEMA_REGISTRY_AUTH_USER!, // サーバーでのみ使用可能
+        pass: process.env.GFTD_SCHEMA_REGISTRY_AUTH_PASSWORD! // サーバーでのみ使用可能
+      },
     },
   },
   storage: {
-    bucketName: 'uploads',
-    endpoint: process.env.S3_ENDPOINT!,
-    accessKeyId: process.env.S3_ACCESS_KEY!, // サーバーでのみ使用可能
-    secretAccessKey: process.env.S3_SECRET_KEY!, // サーバーでのみ使用可能
+    bucketName: process.env.GFTD_STORAGE_BUCKET!,
+    endpoint: process.env.GFTD_STORAGE_ENDPOINT!,
+    accessKeyId: process.env.GFTD_STORAGE_ACCESS_KEY!, // サーバーでのみ使用可能
+    secretAccessKey: process.env.GFTD_STORAGE_SECRET_KEY!, // サーバーでのみ使用可能
   },
   auth: {
-    jwtSecret: process.env.JWT_SECRET!, // サーバーでのみ使用可能
+    jwtSecret: process.env.GFTD_JWT_SECRET!, // サーバーでのみ使用可能
   },
 });
 
@@ -157,20 +161,21 @@ import { createBrowserClient } from '@gftdcojp/gftd-orm/browser';
 
 const client = createBrowserClient({
   url: process.env.NEXT_PUBLIC_GFTD_URL!,
+  key: process.env.NEXT_PUBLIC_GFTD_ANON_KEY!, // 公開APIキーのみ
   database: {
     ksql: {
-      url: process.env.NEXT_PUBLIC_KSQLDB_URL!,
-      apiKey: process.env.NEXT_PUBLIC_KSQLDB_API_KEY, // 公開APIキーのみ
+      url: process.env.NEXT_PUBLIC_GFTD_DB_URL!,
+      apiKey: process.env.NEXT_PUBLIC_GFTD_DB_API_KEY, // 公開APIキーのみ
       // apiSecret は使用不可（セキュリティ）
     },
     schemaRegistry: {
-      url: process.env.NEXT_PUBLIC_SCHEMA_REGISTRY_URL!,
-      apiKey: process.env.NEXT_PUBLIC_SCHEMA_REGISTRY_API_KEY, // 公開APIキーのみ
+      url: process.env.NEXT_PUBLIC_GFTD_SCHEMA_REGISTRY_URL!,
+      apiKey: process.env.NEXT_PUBLIC_GFTD_SCHEMA_REGISTRY_API_KEY, // 公開APIキーのみ
     },
   },
   realtime: {
-    url: process.env.NEXT_PUBLIC_REALTIME_URL!,
-    apiKey: process.env.NEXT_PUBLIC_REALTIME_API_KEY, // 公開APIキーのみ
+    url: process.env.NEXT_PUBLIC_GFTD_REALTIME_URL!,
+    apiKey: process.env.NEXT_PUBLIC_GFTD_REALTIME_API_KEY, // 公開APIキーのみ
   },
   // storage, authは制限付き（URLのみ）
 });
@@ -215,15 +220,19 @@ import { createServerClient } from '@gftdcojp/gftd-orm/server';
 export async function GET() {
   const client = createServerClient({
     url: process.env.GFTD_URL!,
+    key: process.env.GFTD_SERVICE_ROLE_KEY!, // サーバーでのみ安全
     database: {
       ksql: {
-        url: process.env.KSQLDB_URL!,
-        apiKey: process.env.KSQLDB_API_KEY,
-        apiSecret: process.env.KSQLDB_API_SECRET, // サーバーでのみ安全
+        url: process.env.GFTD_DB_URL!,
+        apiKey: process.env.GFTD_DB_API_KEY,
+        apiSecret: process.env.GFTD_DB_API_SECRET, // サーバーでのみ安全
       },
       schemaRegistry: {
-        url: process.env.SCHEMA_REGISTRY_URL!,
-        auth: { user: 'admin', pass: 'admin' }, // サーバーでのみ安全
+        url: process.env.GFTD_SCHEMA_REGISTRY_URL!,
+        auth: { 
+          user: process.env.GFTD_SCHEMA_REGISTRY_AUTH_USER!, // サーバーでのみ安全
+          pass: process.env.GFTD_SCHEMA_REGISTRY_AUTH_PASSWORD! // サーバーでのみ安全
+        },
       },
     },
   });
@@ -244,9 +253,10 @@ import { useBrowserClient, useRealtimeSubscription } from '@gftdcojp/gftd-orm/ho
 function UserList() {
   const { client, isConnected } = useBrowserClient({
     url: process.env.NEXT_PUBLIC_GFTD_URL!,
+    key: process.env.NEXT_PUBLIC_GFTD_ANON_KEY!,
     database: {
-      ksql: { url: process.env.NEXT_PUBLIC_KSQLDB_URL! },
-      schemaRegistry: { url: process.env.NEXT_PUBLIC_SCHEMA_REGISTRY_URL! },
+      ksql: { url: process.env.NEXT_PUBLIC_GFTD_DB_URL! },
+      schemaRegistry: { url: process.env.NEXT_PUBLIC_GFTD_SCHEMA_REGISTRY_URL! },
     },
   });
 
@@ -271,31 +281,50 @@ function UserList() {
 
 # 🔒 サーバー専用（機密情報）
 GFTD_URL=http://localhost:8088
-KSQLDB_URL=http://localhost:8088
-KSQLDB_API_KEY=your-api-key
-KSQLDB_API_SECRET=your-secret-key           # ⚠️ 機密情報
-SCHEMA_REGISTRY_URL=http://localhost:8081
-SCHEMA_REGISTRY_USER=admin                  # ⚠️ 機密情報
-SCHEMA_REGISTRY_PASSWORD=admin              # ⚠️ 機密情報
-S3_ENDPOINT=http://localhost:9000
-S3_ACCESS_KEY=minioadmin                    # ⚠️ 機密情報
-S3_SECRET_KEY=minioadmin                    # ⚠️ 機密情報
-JWT_SECRET=your-super-secret-jwt-key        # ⚠️ 機密情報
+GFTD_SERVICE_ROLE_KEY=your-service-role-key       # ⚠️ 機密情報
+GFTD_JWT_SECRET=your-super-secret-jwt-key         # ⚠️ 機密情報
+
+# Database (ksqlDB)
+GFTD_DB_URL=http://localhost:8088
+GFTD_DB_API_KEY=your-api-key
+GFTD_DB_API_SECRET=your-secret-key                # ⚠️ 機密情報
+
+# Schema Registry
+GFTD_SCHEMA_REGISTRY_URL=http://localhost:8081
+GFTD_SCHEMA_REGISTRY_AUTH_USER=admin              # ⚠️ 機密情報
+GFTD_SCHEMA_REGISTRY_AUTH_PASSWORD=admin          # ⚠️ 機密情報
+
+# Storage (S3 Compatible)
+GFTD_STORAGE_ENDPOINT=http://localhost:9000
+GFTD_STORAGE_ACCESS_KEY=minioadmin                # ⚠️ 機密情報
+GFTD_STORAGE_SECRET_KEY=minioadmin                # ⚠️ 機密情報
+GFTD_STORAGE_BUCKET=uploads
+
+# Realtime
+GFTD_REALTIME_URL=ws://localhost:8088
+GFTD_REALTIME_API_KEY=your-realtime-api-key       # ⚠️ 機密情報
 
 # 🌍 クライアント公開用（NEXT_PUBLIC_ プレフィックス）
 NEXT_PUBLIC_GFTD_URL=http://localhost:8088
-NEXT_PUBLIC_KSQLDB_URL=http://localhost:8088
-NEXT_PUBLIC_KSQLDB_API_KEY=your-public-api-key    # 📢 公開用キー
-NEXT_PUBLIC_SCHEMA_REGISTRY_URL=http://localhost:8081
-NEXT_PUBLIC_SCHEMA_REGISTRY_API_KEY=your-public-schema-key  # 📢 公開用キー
-NEXT_PUBLIC_REALTIME_URL=ws://localhost:8088
-NEXT_PUBLIC_REALTIME_API_KEY=your-public-realtime-key      # 📢 公開用キー
+NEXT_PUBLIC_GFTD_ANON_KEY=your-anon-key           # 📢 公開用キー
+
+# Database (ksqlDB) - クライアント用
+NEXT_PUBLIC_GFTD_DB_URL=http://localhost:8088
+NEXT_PUBLIC_GFTD_DB_API_KEY=your-public-api-key   # 📢 公開用キー
+
+# Schema Registry - クライアント用
+NEXT_PUBLIC_GFTD_SCHEMA_REGISTRY_URL=http://localhost:8081
+NEXT_PUBLIC_GFTD_SCHEMA_REGISTRY_API_KEY=your-public-schema-key  # 📢 公開用キー
+
+# Realtime - クライアント用
+NEXT_PUBLIC_GFTD_REALTIME_URL=ws://localhost:8088
+NEXT_PUBLIC_GFTD_REALTIME_API_KEY=your-public-realtime-key      # 📢 公開用キー
 ```
 
 **🔐 セキュリティ重要事項：**
 
 - `NEXT_PUBLIC_*` 変数はブラウザに送信されるため、**公開用APIキー**のみ設定
-- `API_SECRET`, `PASSWORD`, `JWT_SECRET` などは**絶対に**`NEXT_PUBLIC_*`にしない
+- `GFTD_SERVICE_ROLE_KEY`, `GFTD_DB_API_SECRET`, `GFTD_SCHEMA_REGISTRY_AUTH_*`, `GFTD_STORAGE_*_KEY`, `GFTD_JWT_SECRET` などは**絶対に**`NEXT_PUBLIC_*`にしない
 - ブラウザクライアントは読み取り専用操作のみ、書き込みはサーバー経由を推奨
 
 ## 🚀 クイックスタート
@@ -306,39 +335,43 @@ NEXT_PUBLIC_REALTIME_API_KEY=your-public-realtime-key      # 📢 公開用キ�
 import { createClient } from '@gftdcojp/gftd-orm';
 
 const client = createClient({
-  url: 'http://localhost:8088',
-  key: 'your-api-key',
+  url: process.env.GFTD_URL!,
+  key: process.env.GFTD_SERVICE_ROLE_KEY!,
   
   // Database設定（必須）
   database: {
     ksql: {
-      url: 'http://localhost:8088',
-      apiKey: 'your-api-key',
-      apiSecret: 'your-api-secret',
+      url: process.env.GFTD_DB_URL!,
+      apiKey: process.env.GFTD_DB_API_KEY!,
+      apiSecret: process.env.GFTD_DB_API_SECRET!,
     },
     schemaRegistry: {
-      url: 'http://localhost:8081',
-      auth: { user: 'admin', pass: 'admin' },
+      url: process.env.GFTD_SCHEMA_REGISTRY_URL!,
+      auth: { 
+        user: process.env.GFTD_SCHEMA_REGISTRY_AUTH_USER!, 
+        pass: process.env.GFTD_SCHEMA_REGISTRY_AUTH_PASSWORD! 
+      },
     },
   },
   
   // Realtime設定（オプション）
   realtime: {
-    url: 'ws://localhost:8088',
+    url: process.env.GFTD_REALTIME_URL!,
+    apiKey: process.env.GFTD_REALTIME_API_KEY!,
     autoReconnect: true,
   },
   
   // Storage設定（オプション）
   storage: {
-    bucketName: 'my-bucket',
-    endpoint: 'http://localhost:9000',
-    accessKeyId: 'minioadmin',
-    secretAccessKey: 'minioadmin',
+    bucketName: process.env.GFTD_STORAGE_BUCKET!,
+    endpoint: process.env.GFTD_STORAGE_ENDPOINT!,
+    accessKeyId: process.env.GFTD_STORAGE_ACCESS_KEY!,
+    secretAccessKey: process.env.GFTD_STORAGE_SECRET_KEY!,
   },
   
   // Auth設定（オプション）
   auth: {
-    jwtSecret: 'your-jwt-secret',
+    jwtSecret: process.env.GFTD_JWT_SECRET!,
   },
 });
 

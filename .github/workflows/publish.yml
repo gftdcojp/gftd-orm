@@ -1,4 +1,4 @@
-name: Publish Package
+name: Publish to GitHub Package Registry
 
 on:
   release:
@@ -12,16 +12,18 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: write
       id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js for GitHub Package Registry
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@gftdcojp'
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -40,18 +42,6 @@ jobs:
       - name: Build package
         run: pnpm build
 
-      - name: Publish to npm
-        run: pnpm publish --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Setup Node.js for GitHub Package Registry
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@gftdcojp'
-
       - name: Publish to GitHub Package Registry
         run: pnpm publish --no-git-checks
         env:
@@ -62,13 +52,12 @@ jobs:
         with:
           script: |
             const { owner, repo } = context.repo;
-            const sha = context.sha;
             
             await github.rest.repos.createDeploymentStatus({
               owner,
               repo,
               deployment_id: context.payload.deployment?.id || 0,
               state: 'success',
-              description: 'Package published successfully',
-              environment: 'npm'
+              description: 'Package published successfully to GitHub Package Registry',
+              environment: 'github-packages'
             }); 

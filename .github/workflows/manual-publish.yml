@@ -1,4 +1,4 @@
-name: Manual Publish Package
+name: Manual Publish to GitHub Package Registry
 
 on:
   workflow_dispatch:
@@ -7,21 +7,13 @@ on:
         description: 'Version to publish (e.g., patch, minor, major, or specific version like 1.0.0)'
         required: true
         default: 'patch'
-      registry:
-        description: 'Registry to publish to'
-        required: true
-        default: 'both'
-        type: choice
-        options:
-          - both
-          - npm
-          - github
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      packages: write
       id-token: write
     steps:
       - name: Checkout
@@ -29,11 +21,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
+      - name: Setup Node.js for GitHub Package Registry
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@gftdcojp'
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -74,22 +67,7 @@ jobs:
           git tag "v${{ steps.version.outputs.new_version }}"
           git push origin main --tags
 
-      - name: Publish to npm
-        if: github.event.inputs.registry == 'npm' || github.event.inputs.registry == 'both'
-        run: pnpm publish --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Setup Node.js for GitHub Package Registry
-        if: github.event.inputs.registry == 'github' || github.event.inputs.registry == 'both'
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@gftdcojp'
-
       - name: Publish to GitHub Package Registry
-        if: github.event.inputs.registry == 'github' || github.event.inputs.registry == 'both'
         run: pnpm publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -107,14 +85,15 @@ jobs:
             
             ## Installation
             
-            ### From npm
-            ```bash
-            npm install @gftdcojp/gftd-orm@${{ steps.version.outputs.new_version }}
-            ```
-            
             ### From GitHub Package Registry
             ```bash
             npm install @gftdcojp/gftd-orm@${{ steps.version.outputs.new_version }} --registry=https://npm.pkg.github.com
+            ```
+            
+            ### Using .npmrc
+            ```bash
+            echo "@gftdcojp:registry=https://npm.pkg.github.com" >> .npmrc
+            npm install @gftdcojp/gftd-orm@${{ steps.version.outputs.new_version }}
             ```
           draft: false
           prerelease: false
@@ -124,13 +103,12 @@ jobs:
         with:
           script: |
             const { owner, repo } = context.repo;
-            const registries = '${{ github.event.inputs.registry }}' === 'both' ? 'npm and GitHub Package Registry' : '${{ github.event.inputs.registry }}';
             
             await github.rest.repos.createDeploymentStatus({
               owner,
               repo,
               deployment_id: context.payload.deployment?.id || 0,
               state: 'success',
-              description: `Package v${{ steps.version.outputs.new_version }} published successfully to ${registries}`,
-              environment: 'production'
+              description: `Package v${{ steps.version.outputs.new_version }} published successfully to GitHub Package Registry`,
+              environment: 'github-packages'
             }); 
