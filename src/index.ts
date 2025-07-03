@@ -15,8 +15,6 @@ export * from './ksqldb-client';
 export * from './schema-registry';
 export * from './database';
 export * from './realtime';
-export * from './storage';
-export * from './auth';
 
 // セキュリティ機能
 export * from './config';
@@ -30,8 +28,6 @@ import { getCoreConfig, getDatabaseConfig, getRealtimeConfig, getStorageConfig, 
 
 import { Database, createDatabase } from './database';
 import { Realtime, createRealtime, RealtimeConfig } from './realtime';
-import { Storage, createStorage, StorageConfig } from './storage';
-import { Auth, createAuth, AuthConfig } from './auth';
 import { KsqlDbConfig, SchemaRegistryConfig } from './types';
 
 /**
