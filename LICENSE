@@ -1,11 +1,61 @@
-Copyright (c) 2024 gftdcojp
+Business Source License (No Expiration)
 
-All rights reserved.
+License text based on Business Source License 1.1
+Copyright (c) 2017 MariaDB Corporation Ab, All Rights Reserved.
+"Business Source License" is a trademark of MariaDB Corporation Ab.
 
-This software and associated documentation files (the "Software") are proprietary and confidential to gftdcojp. No part of the Software may be reproduced, distributed, or transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without the prior written permission of gftdcojp.
+Parameters:
+Licensor:             gftdcojp
+Licensed Work:        GFTD ORM
+                      The Licensed Work is (c) 2024 gftdcojp
+Additional Use Grant: You may use the Licensed Work when your use does not
+                      include offering a service that competes with the
+                      Licensed Work or providing managed hosting services
+                      of the Licensed Work.
+Change Date:          None (This license remains in effect indefinitely)
+Change License:       None
 
-The Software is provided "AS IS", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. In no event shall gftdcojp be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the Software or the use or other dealings in the Software.
+For information about alternative licensing arrangements for the Licensed Work,
+please contact: gftdcojp
 
-For licensing inquiries, please contact gftdcojp.
+Notice:
+The Business Source License (this document, or the "License") is not an Open
+Source license. The Licensed Work will remain under this license indefinitely
+unless otherwise specified by the Licensor.
 
-gftdcojp reserves the right to modify this license at any time without notice. 
+License Grant:
+Subject to the terms and conditions of this License, the Licensor hereby grants
+you a non-exclusive, royalty-free, worldwide, non-transferable license to use,
+copy, modify, create derivative works of, and distribute the Licensed Work,
+provided that your use does not violate the Additional Use Grant above.
+
+Permitted Uses:
+- Personal, educational, and research purposes
+- Internal business use within your organization
+- Non-commercial projects and applications
+- Contributing improvements back to the Licensed Work
+- Creating derivative works for permitted purposes
+
+Prohibited Uses:
+- Offering the Licensed Work as a managed service
+- Providing hosting services for the Licensed Work
+- Creating competing commercial products based on the Licensed Work
+- Sublicensing the Licensed Work for commercial redistribution
+
+Commercial License:
+For commercial use cases not covered by the Additional Use Grant, please
+contact gftdcojp to obtain a commercial license.
+
+Termination:
+This License will terminate immediately upon any breach of its terms.
+Upon termination, you must cease all use of the Licensed Work and destroy
+all copies in your possession.
+
+Disclaimer:
+THE LICENSED WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. 

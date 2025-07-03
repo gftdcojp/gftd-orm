@@ -730,11 +730,29 @@ auth: {
 
 ## 📝 ライセンス
 
-MIT License
+**Business Source License (No Expiration)** - 詳細は [LICENSE](LICENSE) ファイルを参照してください。
+
+### 🎯 ライセンス概要
+
+- ✅ **個人・教育・研究目的**: 自由に使用可能
+- ✅ **内部利用**: 組織内での使用OK
+- ✅ **非商用プロジェクト**: 自由に使用可能
+- ✅ **コントリビューション**: 改良・貢献歓迎
+- ⚠️ **競合サービス**: 直接競合するサービスでの利用は制限
+- ⚠️ **マネージドサービス**: ホスティングサービスでの提供は制限
+- 💼 **商用利用**: 商用ライセンスについては gftdcojp にお問い合わせください
 
 ## 🤝 貢献
 
 プルリクエストやイシューを歓迎します。
+
+### 貢献方法
+
+1. このリポジトリをフォーク
+2. フィーチャーブランチを作成 (`git checkout -b feature/AmazingFeature`)
+3. 変更をコミット (`git commit -m 'Add some AmazingFeature'`)
+4. ブランチにプッシュ (`git push origin feature/AmazingFeature`)
+5. プルリクエストを作成
 
 ---
 
