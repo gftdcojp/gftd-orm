@@ -32,7 +32,6 @@
     "test:benchmark": "vitest run --reporter=verbose src/__tests__/benchmark.test.ts",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write src/**/*.ts",
-
     "prepublishOnly": "pnpm run build",
     "prepack": "pnpm run build",
     "version": "node scripts/update-version.js show",
@@ -52,15 +51,12 @@
     "drizzle",
     "stream-processing",
     "realtime",
-    "storage",
-    "auth",
-    "supabase",
+    "schema-registry",
+    "avro",
     "gftd",
-    "nextjs",
-    "react",
-    "ssr",
-    "client-server",
-    "hooks"
+    "data-platform",
+    "audit-logging",
+    "rate-limiting"
   ],
   "author": {
     "name": "GFTD Team",
@@ -83,7 +79,6 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@gftdcojp/gftd-orm": "^0.1.0",
     "avsc": "^5.7.7",
     "axios": "^1.6.0",
     "dotenv": "^16.3.1",
