@@ -1,6 +1,6 @@
 {
   "name": "@gftdcojp/gftd-orm",
-  "version": "0.1.1",
+  "version": "25.07.0",
   "description": "Enterprise-grade real-time data platform with ksqlDB, inspired by Supabase architecture",
   "main": "dist/src/index.js",
   "module": "dist/src/index.js",
@@ -47,7 +47,14 @@
     "demo:gftd": "pnpm exec ts-node examples/gftd-orm-demo.ts",
     "demo:mv": "pnpm exec ts-node examples/materialized-view-demo.ts",
     "prepublishOnly": "pnpm run build && pnpm run test",
-    "prepack": "pnpm run build"
+    "prepack": "pnpm run build",
+    "version": "node scripts/update-version.js show",
+    "version:patch": "node scripts/update-version.js patch",
+    "version:minor": "node scripts/update-version.js minor",
+    "version:major": "node scripts/update-version.js major",
+    "version:next": "node scripts/update-version.js next",
+    "calver": "node scripts/update-version.js",
+    "calver:init": "node scripts/update-version.js patch"
   },
   "keywords": [
     "ksqldb",

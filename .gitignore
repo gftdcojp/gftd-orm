@@ -138,4 +138,7 @@ docs/
 
 # Package lock files (we use pnpm)
 package-lock.json
-yarn.lock 
+yarn.lock
+
+# CalVer lock file
+.calver-lock.json 
