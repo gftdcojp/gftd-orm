@@ -1,24 +1,29 @@
-name: Manual Publish Package
+name: Publish Pre-release
 
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version to publish (e.g., patch, minor, major, or specific version like 1.0.0)'
+      prerelease_type:
+        description: 'Pre-release type'
         required: true
-        default: 'patch'
+        default: 'beta'
+        type: choice
+        options:
+          - alpha
+          - beta
+          - rc
       registry:
         description: 'Registry to publish to'
         required: true
-        default: 'both'
+        default: 'npm'
         type: choice
         options:
-          - both
           - npm
           - github
+          - both
 
 jobs:
-  publish:
+  publish-prerelease:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -57,26 +62,22 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
 
-      - name: Version bump
+      - name: Version bump for pre-release
         id: version
         run: |
-          if [[ "${{ github.event.inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            pnpm version ${{ github.event.inputs.version }} --no-git-tag-version
-          else
-            pnpm version ${{ github.event.inputs.version }} --no-git-tag-version
-          fi
+          pnpm version prerelease --preid=${{ github.event.inputs.prerelease_type }} --no-git-tag-version
           echo "new_version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Commit version bump
         run: |
           git add package.json
-          git commit -m "🚀 Release v${{ steps.version.outputs.new_version }}"
+          git commit -m "🚀 Pre-release v${{ steps.version.outputs.new_version }}"
           git tag "v${{ steps.version.outputs.new_version }}"
           git push origin main --tags
 
       - name: Publish to npm
         if: github.event.inputs.registry == 'npm' || github.event.inputs.registry == 'both'
-        run: pnpm publish --no-git-checks
+        run: pnpm publish --no-git-checks --tag ${{ github.event.inputs.prerelease_type }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -90,34 +91,38 @@ jobs:
 
       - name: Publish to GitHub Package Registry
         if: github.event.inputs.registry == 'github' || github.event.inputs.registry == 'both'
-        run: pnpm publish --no-git-checks
+        run: pnpm publish --no-git-checks --tag ${{ github.event.inputs.prerelease_type }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create GitHub Release
+      - name: Create Pre-release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v${{ steps.version.outputs.new_version }}
-          release_name: Release v${{ steps.version.outputs.new_version }}
+          release_name: Pre-release v${{ steps.version.outputs.new_version }}
           body: |
-            ## Changes
-            - Automated release from GitHub Actions
+            ## ⚠️ Pre-release Version
+            This is a pre-release version for testing purposes.
             
             ## Installation
             
             ### From npm
             ```bash
-            npm install @gftdcojp/gftd-orm@${{ steps.version.outputs.new_version }}
+            npm install @gftdcojp/gftd-orm@${{ github.event.inputs.prerelease_type }}
             ```
             
             ### From GitHub Package Registry
             ```bash
-            npm install @gftdcojp/gftd-orm@${{ steps.version.outputs.new_version }} --registry=https://npm.pkg.github.com
+            npm install @gftdcojp/gftd-orm@${{ github.event.inputs.prerelease_type }} --registry=https://npm.pkg.github.com
             ```
+            
+            ## Changes
+            - Pre-release build for testing new features
+            - Version: v${{ steps.version.outputs.new_version }}
           draft: false
-          prerelease: false
+          prerelease: true
 
       - name: Create deployment status
         uses: actions/github-script@v6
@@ -131,6 +136,6 @@ jobs:
               repo,
               deployment_id: context.payload.deployment?.id || 0,
               state: 'success',
-              description: `Package v${{ steps.version.outputs.new_version }} published successfully to ${registries}`,
-              environment: 'production'
+              description: `Pre-release v${{ steps.version.outputs.new_version }} published to ${registries}`,
+              environment: 'pre-release'
             }); 
