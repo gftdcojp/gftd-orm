@@ -26,6 +26,7 @@
     "demo": "pnpm exec ts-node examples/mock-demo.ts",
     "demo:real": "pnpm exec ts-node examples/demo.ts",
     "demo:gftd": "pnpm exec ts-node examples/gftd-orm-demo.ts",
+    "demo:mv": "pnpm exec ts-node examples/materialized-view-demo.ts",
     "prepublishOnly": "pnpm run build && pnpm run test",
     "prepack": "pnpm run build"
   },

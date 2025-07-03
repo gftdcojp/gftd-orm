@@ -33,6 +33,14 @@ Confluent Schema Registry + ksqlDB を土台に、**Supabase ライクな統合 
 - **ユーザー管理** - 登録/ログイン/パスワード管理
 - **セッション管理** - 自動リフレッシュ対応
 
+### 🛡️ Security
+- **包括的なセキュリティ** - エンタープライズグレードのセキュリティ機能
+- **SQLインジェクション対策** - パラメータ化クエリとエスケープ処理
+- **レート制限・DDoS対策** - 多層的なアクセス制御
+- **監査ログ** - 全アクティビティの詳細記録
+- **暗号化・ハッシュ化** - bcryptによるパスワード保護
+- **CSRF/XSS対策** - クロスサイト攻撃の防止
+
 ## 🏗️ アーキテクチャ
 
 ```
@@ -331,6 +339,11 @@ pnpm format
 - [examples/mock-demo.ts](examples/mock-demo.ts) - モックデモ
 - [examples/demo.ts](examples/demo.ts) - 従来のAPI
 
+## 📚 ドキュメント
+
+- [**SECURITY.md**](SECURITY.md) - 包括的なセキュリティガイド
+- [**env.example**](env.example) - 環境変数設定例
+
 ## 🏥 ヘルスチェック
 
 ```typescript
@@ -415,13 +428,24 @@ auth: {
 
 ## 🚧 Roadmap
 
+### ✅ 完了済み
+- [x] **セキュリティ強化** - 包括的なエンタープライズセキュリティ機能
+- [x] **監査ログシステム** - セキュリティイベントの詳細記録
+- [x] **レート制限機能** - DDoS攻撃対策とアクセス制御
+- [x] **暗号化機能** - パスワードハッシュ化とJWT署名検証
+
+### 🔄 開発中
 - [ ] GraphQL API 対応
 - [ ] Edge Functions 対応
 - [ ] Analytics & Monitoring
 - [ ] CLI ツール
+
+### 📋 計画中
 - [ ] React/Vue.js フック
 - [ ] Docker Compose セットアップ
 - [ ] AWS/GCP デプロイガイド
+- [ ] パフォーマンス最適化
+- [ ] 国際化対応 (i18n)
 
 ## 📝 ライセンス
 

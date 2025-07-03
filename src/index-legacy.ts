@@ -119,7 +119,7 @@ async function deployAllModels(): Promise<void> {
  * デフォルトのDDLを生成
  */
 function generateDefaultDDL(definition: any): string {
-  const { schema, type, topic, key, tableName } = definition;
+  const { schema, type, topic, key, tableName, sqlOptions } = definition;
   
   // フィールド定義を ksqlDB 形式に変換
   const fields = Object.entries(schema.fields).map(([name, fieldType]: [string, any]) => {
@@ -129,9 +129,68 @@ function generateDefaultDDL(definition: any): string {
 
   if (type === 'TABLE') {
     return `CREATE TABLE ${tableName} (${fields}) WITH (KAFKA_TOPIC='${topic}', VALUE_FORMAT='AVRO', KEY='${key}');`;
+  } else if (type === 'MATERIALIZED_VIEW') {
+    return generateMaterializedViewDDL(definition);
   } else {
     return `CREATE STREAM ${tableName} (${fields}) WITH (KAFKA_TOPIC='${topic}', VALUE_FORMAT='AVRO');`;
   }
+}
+
+/**
+ * Materialized View のDDLを生成
+ */
+function generateMaterializedViewDDL(definition: any): string {
+  const { schema, topic, key, tableName, sqlOptions } = definition;
+  const mvConfig = sqlOptions?.materializedView;
+  
+  if (!mvConfig) {
+    throw new Error(`Materialized view configuration is required for ${tableName}`);
+  }
+  
+  // カスタムクエリが指定されている場合
+  if (mvConfig.query) {
+    return `CREATE TABLE ${tableName} WITH (KAFKA_TOPIC='${topic}', VALUE_FORMAT='AVRO', KEY='${key}') AS ${mvConfig.query};`;
+  }
+  
+  // 自動生成の場合
+  const sourceTable = mvConfig.sourceTable || mvConfig.sourceStream;
+  if (!sourceTable) {
+    throw new Error(`Source table/stream is required for materialized view ${tableName}`);
+  }
+  
+  let query = `SELECT `;
+  
+  // 集計関数の処理
+  if (mvConfig.aggregations) {
+    const aggFields = Object.entries(mvConfig.aggregations).map(([field, aggFunc]) => {
+      const aggFuncStr = aggFunc as string;
+      return `${aggFuncStr}(${field}) as ${field}_${aggFuncStr.toLowerCase()}`;
+    });
+    query += aggFields.join(', ');
+  } else {
+    query += '*';
+  }
+  
+  query += ` FROM ${sourceTable}`;
+  
+  // GROUP BY の処理
+  if (mvConfig.groupBy && mvConfig.groupBy.length > 0) {
+    query += ` GROUP BY ${mvConfig.groupBy.join(', ')}`;
+  }
+  
+  // Window の処理
+  if (mvConfig.windowConfig) {
+    const { type, size, advanceBy } = mvConfig.windowConfig;
+    if (type === 'TUMBLING') {
+      query += ` WINDOW TUMBLING (SIZE ${size})`;
+    } else if (type === 'HOPPING') {
+      query += ` WINDOW HOPPING (SIZE ${size}, ADVANCE BY ${advanceBy})`;
+    } else if (type === 'SESSION') {
+      query += ` WINDOW SESSION (${size})`;
+    }
+  }
+  
+  return `CREATE TABLE ${tableName} WITH (KAFKA_TOPIC='${topic}', VALUE_FORMAT='AVRO', KEY='${key}') AS ${query};`;
 }
 
 /**
