@@ -7,7 +7,7 @@ settings:
 dependencies:
   '@gftdcojp/gftd-orm':
     specifier: ^0.1.0
-    version: 0.1.0(express@5.1.0)(react@18.3.1)
+    version: 0.1.1(express@5.1.0)(react@18.3.1)
   avsc:
     specifier: ^5.7.7
     version: 5.7.7
@@ -15,8 +15,8 @@ dependencies:
     specifier: ^1.6.0
     version: 1.10.0
   bcryptjs:
-    specifier: ^2.4.3
-    version: 2.4.3
+    specifier: ^3.0.2
+    version: 3.0.2
   cors:
     specifier: ^2.8.5
     version: 2.8.5
@@ -408,8 +408,8 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
 
-  /@gftdcojp/gftd-orm@0.1.0(express@5.1.0)(react@18.3.1):
-    resolution: {integrity: sha512-L1bQuNsTXdUboZhQHSVB+EVlA8Zt9ZeLcltCjGLq+JJuASbZ0HzJgjr+wrSCP3HZYv/EIg+gmDEgJBEciBw0Kg==}
+  /@gftdcojp/gftd-orm@0.1.1(express@5.1.0)(react@18.3.1):
+    resolution: {integrity: sha512-hTff7N6lYNNdjh6ZdYMqdGsq/hP1FRrlymsPSnahLDr+0uX+oIDzFjLRid11JyfKQlL7pKPU2EllsCDkxs3eEQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^18.0.0
@@ -1144,6 +1144,11 @@ packages:
 
   /bcryptjs@2.4.3:
     resolution: {integrity: sha512-V/Hy/X9Vt7f3BbPJEi8BdVFMByHi+jNXrYkW3huaybV/kQ0KJg0Y6PkEMbn+zeT+i+SiKZ/HMqJGIIt4LZDqNQ==}
+    dev: false
+
+  /bcryptjs@3.0.2:
+    resolution: {integrity: sha512-k38b3XOZKv60C4E2hVsXTolJWfkGRMbILBIe2IBITXciy5bOsTKot5kDrf3ZfufQtQOUN5mXceUEpU1rTl9Uog==}
+    hasBin: true
     dev: false
 
   /body-parser@2.2.0:
