@@ -6,6 +6,18 @@ Enterprise-grade real-time data platform with ksqlDB foundation
 
 An enterprise-grade real-time data platform that provides TypeScript-first integration with ksqlDB, Confluent Schema Registry, and Kafka streams.
 
+## 🚧 実装状況
+
+### ✅ 完成済み機能
+- **TypeScript型システム**: フィールド型定義、スキーマ定義
+- **ksqlDBクライアント**: 完全実装（DDL、DML、プルクエリ、プッシュクエリ）
+- **Schema Registry**: 完全実装（スキーマ登録、取得、互換性チェック）
+- **Realtime機能**: WebSocketベースのリアルタイム通信
+- **監査ログ**: 包括的なログ機能
+- **レート制限**: 多層的なレート制限機能
+- **統合クライアント**: 各コンポーネントの統合レイヤー
+- **高レベルAPI**: `createClient`、`defineSchema`、`init`、`healthCheck`等の統合API
+
 ## 🎯 Features
 
 ### 🔷 Database
@@ -55,7 +67,57 @@ pnpm add @gftdcojp/gftd-orm
 
 ## 🚀 Quick Start
 
-### 1. Client Creation and Configuration
+### 1. 基本的な使用方法（現在利用可能）
+
+```typescript
+import { 
+  initializeKsqlDbClient, 
+  executeQuery, 
+  initializeSchemaRegistryClient, 
+  registerSchema,
+  createRealtime,
+  AuditLogManager,
+  RateLimitManager 
+} from '@gftdcojp/gftd-orm';
+
+// ksqlDBクライアントの初期化
+initializeKsqlDbClient({
+  url: 'http://localhost:8088',
+  apiKey: 'your-api-key',
+  apiSecret: 'your-api-secret',
+});
+
+// クエリの実行
+const result = await executeQuery('SHOW STREAMS;');
+
+// Schema Registryの初期化
+initializeSchemaRegistryClient({
+  url: 'http://localhost:8081',
+  auth: { user: 'admin', pass: 'admin' }
+});
+
+// スキーマの登録
+await registerSchema('user-value', {
+  type: 'record',
+  name: 'User',
+  fields: [
+    { name: 'id', type: 'string' },
+    { name: 'name', type: 'string' },
+    { name: 'email', type: 'string' }
+  ]
+});
+
+// リアルタイム機能
+const realtime = createRealtime({
+  url: 'ws://localhost:8088',
+  apiKey: 'your-api-key'
+});
+
+const channel = realtime.channel('user-changes');
+await channel.connect();
+```
+
+### 2. 統合クライアント（推奨）
 
 ```typescript
 import { createClient } from '@gftdcojp/gftd-orm';
@@ -64,7 +126,6 @@ const client = createClient({
   url: process.env.GFTD_URL!,
   key: process.env.GFTD_SERVICE_ROLE_KEY!,
   
-  // Database configuration (required)
   database: {
     ksql: {
       url: process.env.GFTD_DB_URL!,
@@ -80,7 +141,6 @@ const client = createClient({
     },
   },
   
-  // Realtime configuration (optional)
   realtime: {
     url: process.env.GFTD_REALTIME_URL!,
     apiKey: process.env.GFTD_REALTIME_API_KEY,
@@ -88,26 +148,60 @@ const client = createClient({
   },
 });
 
-// Initialize
+// クライアントを初期化
 await client.initialize();
+
+// ヘルスチェック
+const health = await client.health();
+console.log(health);
+// {
+//   status: 'ok',
+//   version: '25.07.6',
+//   features: ['database', 'schema-registry', 'realtime', 'audit', 'rate-limit'],
+//   connections: {
+//     ksqldb: 'connected',
+//     schemaRegistry: 'connected',
+//     realtime: 'connected'
+//   }
+// }
+
+// リアルタイムチャンネルを使用
+const channel = client.channel('user-changes');
+await channel.connect();
+
+// 接続状態を確認
+console.log(client.isConnected()); // true
+
+// クライアントを閉じる
+client.disconnect();
 ```
 
-### 2. Schema Definition
+### 3. 型定義とスキーマ
 
 ```typescript
 import { defineSchema, FieldType } from '@gftdcojp/gftd-orm';
 
-// Define user schema
+// TypeScriptタイプセーフなスキーマ定義
 const UserSchema = defineSchema('User', {
-  id:       FieldType.UUID.primaryKey(),
+  id: FieldType.UUID.primaryKey(),
   tenantId: FieldType.UUID.notNull(),
-  name:     FieldType.STRING.notNull(),
-  email:    FieldType.STRING.notNull(),
-  created:  FieldType.TIMESTAMP.withDefault('CURRENT_TIMESTAMP'),
+  name: FieldType.STRING.notNull(),
+  email: FieldType.STRING.notNull(),
+  created: FieldType.TIMESTAMP.withDefault('CURRENT_TIMESTAMP'),
 });
+
+// 型推論が効く
+type User = typeof UserSchema.type;
+// {
+//   id: string;
+//   tenantId: string;
+//   name: string;
+//   email: string;
+//   created: Date;
+// }
 ```
 
-### 3. ksqlDB Client Usage
+### 4. ksqlDB Client Usage
 
 ```typescript
 import { KsqlDbClient } from '@gftdcojp/gftd-orm';
@@ -135,7 +229,7 @@ await ksqlClient.createStream({
 });
 ```
 
-### 4. Schema Registry Integration
+### 5. Schema Registry Integration
 
 ```typescript
 import { SchemaRegistry } from '@gftdcojp/gftd-orm';
@@ -160,7 +254,7 @@ await schemaRegistry.registerSchema('user-value', {
 const schema = await schemaRegistry.getSchema('user-value', 'latest');
 ```
 
-### 5. Realtime Monitoring
+### 6. Realtime Monitoring
 
 ```typescript
 // Create realtime channel
@@ -186,7 +280,7 @@ await channel.broadcast('notifications', {
 await channel.connect();
 ```
 
-### 6. Audit Logging
+### 7. Audit Logging
 
 ```typescript
 import { AuditLogManager } from '@gftdcojp/gftd-orm';
@@ -211,7 +305,7 @@ const logs = await AuditLogManager.searchLogs({
 });
 ```
 
-### 7. Rate Limiting
+### 8. Rate Limiting
 
 ```typescript
 import { RateLimitManager } from '@gftdcojp/gftd-orm';
@@ -324,8 +418,10 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed development setup.
 - [x] **Audit Logging** - Comprehensive activity logging
 - [x] **Rate Limiting** - Request throttling and rate limiting
 - [x] **TypeScript Support** - Full TypeScript definitions
+- [x] **Unified Client API** - Integrated client interface
+- [x] **Schema Definition Integration** - High-level schema definition API
 
-### 🔄 Planned
+### 🔮 Planned
 - [ ] **Enhanced Query Builder** - Advanced ksqlDB query construction
 - [ ] **Stream Processing Utilities** - Higher-level stream processing abstractions
 - [ ] **Monitoring Dashboard** - Real-time monitoring interface
