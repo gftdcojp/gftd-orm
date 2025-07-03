@@ -60,8 +60,6 @@ export function createConfigFromEnv(): GftdOrmConfig {
   const coreConfig = getCoreConfig();
   const databaseConfig = getDatabaseConfig();
   const realtimeConfig = getRealtimeConfig();
-  const storageConfig = getStorageConfig();
-  const securityConfig = getSecurityConfig();
   
   return {
     url: coreConfig.url,
@@ -87,16 +85,6 @@ export function createConfigFromEnv(): GftdOrmConfig {
       url: realtimeConfig.url,
       apiKey: realtimeConfig.apiKey,
       autoReconnect: true,
-    },
-    storage: {
-      bucketName: storageConfig.bucket,
-      endpoint: storageConfig.endpoint,
-      accessKeyId: storageConfig.accessKey,
-      secretAccessKey: storageConfig.secretKey,
-    },
-    auth: {
-      jwtSecret: securityConfig.jwt.secret,
-      jwtExpiresIn: securityConfig.jwt.expiresIn,
     },
   };
 }
@@ -133,14 +121,6 @@ export class GftdOrmClient {
 
     if (this.realtime) {
       // Realtime は明示的に接続を開始する必要がある場合のみ
-    }
-
-    if (this.storage) {
-      initPromises.push(this.storage.initialize());
-    }
-
-    if (this.auth) {
-      initPromises.push(this.auth.initialize());
     }
 
     await Promise.all(initPromises);
