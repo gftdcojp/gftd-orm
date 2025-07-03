@@ -7,7 +7,7 @@ settings:
 dependencies:
   '@gftdcojp/gftd-orm':
     specifier: ^0.1.0
-    version: 0.1.0(express@5.1.0)(react@18.3.1)
+    version: 0.1.1(express@5.1.0)(react@18.3.1)
   avsc:
     specifier: ^5.7.7
     version: 5.7.7
@@ -33,8 +33,8 @@ dependencies:
     specifier: ^7.0.1
     version: 7.2.1
   helmet:
-    specifier: ^7.1.0
-    version: 7.2.0
+    specifier: ^8.1.0
+    version: 8.1.0
   jsonwebtoken:
     specifier: ^9.0.2
     version: 9.0.2
@@ -408,8 +408,8 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
 
-  /@gftdcojp/gftd-orm@0.1.0(express@5.1.0)(react@18.3.1):
-    resolution: {integrity: sha512-L1bQuNsTXdUboZhQHSVB+EVlA8Zt9ZeLcltCjGLq+JJuASbZ0HzJgjr+wrSCP3HZYv/EIg+gmDEgJBEciBw0Kg==}
+  /@gftdcojp/gftd-orm@0.1.1(express@5.1.0)(react@18.3.1):
+    resolution: {integrity: sha512-hTff7N6lYNNdjh6ZdYMqdGsq/hP1FRrlymsPSnahLDr+0uX+oIDzFjLRid11JyfKQlL7pKPU2EllsCDkxs3eEQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^18.0.0
@@ -1937,6 +1937,11 @@ packages:
   /helmet@7.2.0:
     resolution: {integrity: sha512-ZRiwvN089JfMXokizgqEPXsl2Guk094yExfoDXR0cBYWxtBbaSww/w+vT4WEJsBW2iTUi1GgZ6swmoug3Oy4Xw==}
     engines: {node: '>=16.0.0'}
+    dev: false
+
+  /helmet@8.1.0:
+    resolution: {integrity: sha512-jOiHyAZsmnr8LqoPGmCjYAaiuWwjAPLgY8ZX2XrmHawt99/u1y6RgrZMTeoPfpUbV96HOalYgz1qzkRbw54Pmg==}
+    engines: {node: '>=18.0.0'}
     dev: false
 
   /html-escaper@2.0.2:
