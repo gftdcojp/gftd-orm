@@ -282,13 +282,14 @@ export class DatabaseQueryBuilder<T = any> {
       const { executePushQuery } = await import('./ksqldb-client');
 
              // EMIT CHANGES を追加してプッシュクエリにする
+       // プッシュクエリではLIMITとOFFSETは使用できないため除外
        let baseQuery = buildSelectQuery(
          this.tableName,
          this.selectFields,
          this.whereConditions,
          this.orderByConditions,
-         this.limitValue,
-         this.offsetValue
+         undefined, // limitValue を無効化
+         undefined  // offsetValue を無効化
        );
        
        // セミコロンを削除してEMIT CHANGESを追加してからセミコロンを付ける
@@ -296,8 +297,6 @@ export class DatabaseQueryBuilder<T = any> {
          baseQuery = baseQuery.slice(0, -1);
        }
        const query = baseQuery + ' EMIT CHANGES;';
-       
-       console.log('🔍 Generated push query SQL:', query);
 
       return executePushQuery(
         query,

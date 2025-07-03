@@ -217,7 +217,13 @@ export async function executePushQuery(
               queryId,
             });
           } catch (error) {
-            console.warn('Failed to terminate query:', error);
+            // クエリが既に終了している場合は正常なケースとして処理
+            if (axios.isAxiosError(error) && error.response?.status === 400) {
+              // 400エラーは通常、クエリが既に存在しないことを意味するため、警告レベルで処理
+              console.debug('Query already terminated or completed:', queryId);
+            } else {
+              console.warn('Failed to terminate query:', error);
+            }
           }
         }
       }

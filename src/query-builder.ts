@@ -55,22 +55,8 @@ export function buildInsertQuery(topicName: string, data: Record<string, any>): 
   const fields = Object.keys(data);
   const values = Object.values(data);
 
-  // 値をSQL形式にフォーマット
-  const formattedValues = values.map(value => {
-    if (value === null || value === undefined) {
-      return 'NULL';
-    }
-    if (typeof value === 'string') {
-      return `'${value.replace(/'/g, "''")}'`; // SQLインジェクション対策
-    }
-    if (typeof value === 'boolean') {
-      return value ? 'TRUE' : 'FALSE';
-    }
-    if (value instanceof Date) {
-      return `'${value.toISOString()}'`;
-    }
-    return String(value);
-  });
+  // 値をSQL形式にフォーマット（セキュリティ強化版を使用）
+  const formattedValues = values.map(value => formatSqlValue(value));
 
   return `INSERT INTO ${topicName} (${fields.join(', ')}) VALUES (${formattedValues.join(', ')});`;
 }
