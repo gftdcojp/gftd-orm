@@ -284,8 +284,8 @@ async function main() {
     console.log('  📊 System health:');
     console.log('    - Database:', health.database.status);
     console.log('    - Realtime:', health.realtime.status);
-    // console.log('    - Storage:', health.storage.status);
-    // console.log('    - Auth:', health.auth.status);
+    // console.log('    - Storage:', health.storage?.status);
+    // console.log('    - Auth:', health.auth?.status);
   } catch (error) {
     console.log('  ⚠️  Health check failed:', error);
   }

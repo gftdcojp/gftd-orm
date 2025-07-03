@@ -2,7 +2,7 @@
  * Rate Limiting - レート制限機能
  */
 
-import { getSecurityConfig } from './config';
+// Security configuration is now handled via environment variables
 import { AuditLogManager } from './audit-log';
 
 /**
@@ -36,10 +36,10 @@ export class RateLimitManager {
   private cleanupInterval: NodeJS.Timeout | null = null;
 
   private constructor(config?: Partial<RateLimitConfig>) {
-    const security = getSecurityConfig();
+    // デフォルトのレート制限設定
     this.config = {
-      windowMs: security.rateLimit.windowMs,
-      maxRequests: security.rateLimit.maxRequests,
+      windowMs: parseInt(process.env.GFTD_RATE_LIMIT_WINDOW_MS || '60000'), // 1分
+      maxRequests: parseInt(process.env.GFTD_RATE_LIMIT_MAX_REQUESTS || '100'),
       skipSuccessfulRequests: false,
       skipFailedRequests: false,
       keyGenerator: (req: any) => req.ip || req.connection.remoteAddress || 'unknown',
@@ -271,9 +271,9 @@ export class SlowDownManager {
     maxDelayMs?: number;
   }): SlowDownManager {
     if (!SlowDownManager.instance) {
-      const security = getSecurityConfig();
+      // デフォルト設定を使用
       SlowDownManager.instance = new SlowDownManager({
-        windowMs: config?.windowMs || security.rateLimit.windowMs,
+        windowMs: config?.windowMs || parseInt(process.env.GFTD_RATE_LIMIT_WINDOW_MS || '60000'),
         delayAfter: config?.delayAfter || 5,
         delayMs: config?.delayMs || 100,
         maxDelayMs: config?.maxDelayMs || 5000,

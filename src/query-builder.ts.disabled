@@ -3,7 +3,7 @@
  */
 
 import { WhereCondition, OrderByCondition } from './types';
-import { SecurityHelper } from './security';
+// import { SecurityHelper } from './security';
 import { AuditLogManager } from './audit-log';
 
 /**

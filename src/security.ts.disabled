@@ -5,7 +5,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { getSecurityConfig } from './config';
+// import { getSecurityConfig } from './config';
 
 /**
  * パスワード関連の型定義

@@ -42,7 +42,7 @@ async function simpleConfluentTest() {
     const health = await client.health();
     console.log('📊 Health status:');
     console.log('  - Database:', health.database.status);
-    // console.log('  - Auth:', health.auth.status);
+    // console.log('  - Auth:', health.auth?.status);
     
     if (health.realtime) {
       console.log('  - Realtime:', health.realtime.status);

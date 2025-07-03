@@ -4,7 +4,6 @@
 
 import fs from 'fs';
 import path from 'path';
-import { getSecurityConfig } from './config';
 
 /**
  * 監査ログレベル
@@ -90,10 +89,10 @@ export class AuditLogManager {
   private isProcessing = false;
 
   private constructor() {
-    const security = getSecurityConfig();
+    // セキュリティ設定（デフォルト値）
     this.config = {
-      enabled: security.audit.enabled,
-      logFile: security.audit.logFile,
+      enabled: process.env.GFTD_AUDIT_ENABLED?.toLowerCase() === 'true' || true,
+      logFile: process.env.GFTD_AUDIT_LOG_FILE || './logs/audit.log',
       maxFileSize: 10 * 1024 * 1024, // 10MB
       maxFiles: 10,
       compressRotated: false,
