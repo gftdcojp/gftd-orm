@@ -3,6 +3,7 @@
  */
 
 import dotenv from 'dotenv';
+import { log } from './utils/logger';
 
 // 環境変数を読み込み
 dotenv.config();
@@ -164,9 +165,9 @@ export function validateConfig(): void {
 export function initializeConfig(): void {
   try {
     validateConfig();
-    console.log('✅ Configuration validated successfully');
+    log.success('Configuration validated successfully');
   } catch (error) {
-    console.error('❌ Configuration validation failed:', error);
+    log.failure('Configuration validation failed:', error);
     process.exit(1);
   }
 }

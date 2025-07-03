@@ -13,6 +13,7 @@ export * from './realtime';
 export * from './config';
 export * from './audit-log';
 export * from './rate-limit';
+export * from './utils/logger';
 
 // Import required modules for client implementation
 import { initializeKsqlDbClient, getClientConfig as getKsqlConfig } from './ksqldb-client';
@@ -20,6 +21,7 @@ import { initializeSchemaRegistryClient, getSchemaRegistryConfig } from './schem
 import { createRealtime, Realtime } from './realtime';
 import { validateConfig, getCoreConfig, getDatabaseConfig, getRealtimeConfig } from './config';
 import { KsqlDbConfig, SchemaRegistryConfig } from './types';
+import { log } from './utils/logger';
 
 /**
  * Realtime configuration
@@ -69,7 +71,7 @@ export class GftdOrmClient {
    */
   async initialize(): Promise<void> {
     if (this.initialized) {
-      console.log('GFTD ORM Client already initialized');
+      log.info('GFTD ORM Client already initialized');
       return;
     }
 
@@ -86,10 +88,10 @@ export class GftdOrmClient {
       }
 
       this.initialized = true;
-      console.log('✅ GFTD ORM Client initialized successfully');
+      log.success('GFTD ORM Client initialized successfully');
       
     } catch (error) {
-      console.error('❌ Failed to initialize GFTD ORM Client:', error);
+      log.failure('Failed to initialize GFTD ORM Client:', error);
       throw error;
     }
   }
@@ -138,7 +140,7 @@ export class GftdOrmClient {
       this.realtimeClient.disconnect();
     }
     this.initialized = false;
-    console.log('GFTD ORM Client disconnected');
+    log.info('GFTD ORM Client disconnected');
   }
 }
 
@@ -172,7 +174,7 @@ export { RateLimitManager } from './rate-limit';
  */
 export function init(): void {
   validateConfig();
-  console.log('✅ GFTD ORM configuration validated');
+  log.success('GFTD ORM configuration validated');
 }
 
 /**

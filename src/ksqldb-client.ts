@@ -4,6 +4,7 @@
 
 import axios, { AxiosInstance } from 'axios';
 import { KsqlDbConfig } from './types';
+import { log } from './utils/logger';
 
 let ksqlClient: AxiosInstance | null = null;
 let config: KsqlDbConfig | null = null;
@@ -65,8 +66,8 @@ export async function executePullQuery(sql: string): Promise<any> {
     throw new Error('ksqlDB client is not initialized. Call initializeKsqlDbClient() first.');
   }
 
-  console.log(`[DEBUG] executePullQuery - SQL: ${sql}`);
-  console.log(`[DEBUG] executePullQuery - Config:`, config);
+  log.debug(`executePullQuery - SQL: ${sql}`);
+  log.debug(`executePullQuery - Config:`, config);
 
   try {
     const response = await ksqlClient.post('/query-stream', {
@@ -79,8 +80,8 @@ export async function executePullQuery(sql: string): Promise<any> {
       },
     });
 
-    console.log(`[DEBUG] executePullQuery - Response status: ${response.status}`);
-    console.log(`[DEBUG] executePullQuery - Response headers:`, response.headers);
+    log.debug(`executePullQuery - Response status: ${response.status}`);
+    log.debug(`executePullQuery - Response headers:`, response.headers);
 
     // レスポンスを解析
     if (typeof response.data === 'string') {
@@ -88,30 +89,30 @@ export async function executePullQuery(sql: string): Promise<any> {
       const results = [];
       let header = null;
 
-      console.log(`[DEBUG] executePullQuery - Response lines count: ${lines.length}`);
+      log.debug(`executePullQuery - Response lines count: ${lines.length}`);
 
       for (const line of lines) {
         try {
           const parsed = JSON.parse(line);
           if (!header && parsed.columnNames) {
             header = parsed;
-            console.log(`[DEBUG] executePullQuery - Header:`, header);
+            log.debug(`executePullQuery - Header:`, header);
           } else if (Array.isArray(parsed)) {
             results.push(parsed);
           }
         } catch (parseError) {
-          console.warn(`[WARN] executePullQuery - Failed to parse line: ${line}`, parseError);
+          log.warn(`executePullQuery - Failed to parse line: ${line}`, parseError);
         }
       }
 
-      console.log(`[DEBUG] executePullQuery - Results count: ${results.length}`);
+      log.debug(`executePullQuery - Results count: ${results.length}`);
       return { header, data: results };
     }
 
-    console.log(`[DEBUG] executePullQuery - Raw response data:`, response.data);
+    log.debug(`executePullQuery - Raw response data:`, response.data);
     return response.data;
   } catch (error: any) {
-    console.error(`[ERROR] executePullQuery failed:`, error);
+    log.error(`executePullQuery failed:`, error);
     
     if (axios.isAxiosError(error)) {
       const errorDetails = {
@@ -128,7 +129,7 @@ export async function executePullQuery(sql: string): Promise<any> {
         ksqlDbConfig: config,
       };
       
-      console.error(`[ERROR] executePullQuery - Axios error details:`, errorDetails);
+      log.error(`executePullQuery - Axios error details:`, errorDetails);
       
       let errorMessage = 'Unknown error';
       
@@ -148,14 +149,14 @@ export async function executePullQuery(sql: string): Promise<any> {
       
       // ストリーム vs テーブルの問題を特定しやすくする
       if (errorMessage.includes('stream') || errorMessage.includes('table')) {
-        console.error(`[ERROR] executePullQuery - Possible stream/table issue. SQL: ${sql}`);
-        console.error(`[ERROR] executePullQuery - Remember: Pull queries work only on TABLES, not STREAMS`);
+        log.error(`executePullQuery - Possible stream/table issue. SQL: ${sql}`);
+        log.error(`executePullQuery - Remember: Pull queries work only on TABLES, not STREAMS`);
       }
       
       throw new Error(`ksqlDB pull query failed (${error.response?.status || 'unknown'}): ${errorMessage}`);
     }
     
-    console.error(`[ERROR] executePullQuery - Non-axios error:`, error);
+    log.error(`executePullQuery - Non-axios error:`, error);
     throw error;
   }
 }
@@ -230,7 +231,7 @@ export async function executePushQuery(
             }
           } catch (parseError) {
             // 個別行のパースエラーは無視
-            console.warn('Failed to parse line:', line, parseError);
+            log.warn('Failed to parse line:', { line, parseError });
           }
         }
       } catch (error) {
@@ -273,9 +274,9 @@ export async function executePushQuery(
             // クエリが既に終了している場合は正常なケースとして処理
             if (axios.isAxiosError(error) && error.response?.status === 400) {
               // 400エラーは通常、クエリが既に存在しないことを意味するため、警告レベルで処理
-              console.debug('Query already terminated or completed:', queryId);
+              log.debug('Query already terminated or completed:', { queryId });
             } else {
-              console.warn('Failed to terminate query:', error);
+              log.warn('Failed to terminate query:', error);
             }
           }
         }
