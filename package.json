@@ -24,6 +24,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
+    "test:benchmark": "vitest run --reporter=verbose src/__tests__/benchmark.test.ts",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write src/**/*.ts",
     "demo": "pnpm exec ts-node examples/mock-demo.ts",

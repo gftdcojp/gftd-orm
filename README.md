@@ -313,22 +313,21 @@ pnpm dev
 pnpm build
 
 # テスト実行
-pnpm test
+pnpm test                  # Vitest による高速テスト実行
+pnpm test:watch           # ウォッチモードでテスト実行
+pnpm test:coverage        # カバレッジ付きテスト実行
+pnpm test:ui              # Vitest UI でテスト実行
+pnpm test:benchmark       # ベンチマークテスト実行
 
-# デモ実行（モック）
-pnpm demo
+# デモ実行
+pnpm demo                 # モックデモ
+pnpm demo:real            # 実際のサービス接続デモ
+pnpm demo:gftd            # 新しい統合デモ
+pnpm demo:mv              # Materialized View デモ
 
-# デモ実行（実際のサービス接続）
-pnpm demo:real
-
-# 新しい統合デモ実行
-pnpm demo:gftd
-
-# リント
-pnpm lint
-
-# フォーマット
-pnpm format
+# コード品質
+pnpm lint                 # ESLint でコードチェック
+pnpm format               # Prettier でコードフォーマット
 ```
 
 ## 🎯 実装例
@@ -425,6 +424,29 @@ auth: {
   },
 }
 ```
+
+## 🔧 開発・CI/CD
+
+### テスト環境
+- **Vitest**: 高速で軽量なテストランナー
+- **カバレッジ**: v8 プロバイダーによる詳細なカバレッジレポート
+- **UI テスト**: ブラウザベースのテストUI
+- **ベンチマーク**: パフォーマンステストの自動実行
+
+### CI/CD パイプライン
+- **自動テスト**: Node.js 18.x, 20.x でのマトリックステスト
+- **セキュリティスキャン**: CodeQL、依存関係監査、シークレットスキャン
+- **パフォーマンス監視**: 週次ベンチマーク、メモリリークテスト
+- **自動デプロイ**: GitHub Packages への自動発行
+- **依存関係更新**: Dependabot による週次更新
+
+### 品質保証
+- **型安全性**: TypeScript strict mode
+- **コードスタイル**: ESLint + Prettier
+- **セキュリティ**: SQLインジェクション対策、入力バリデーション
+- **監視**: アラート付きパフォーマンス監視
+
+詳細は [DEVELOPMENT.md](DEVELOPMENT.md) を参照してください。
 
 ## 🚧 Roadmap
 
