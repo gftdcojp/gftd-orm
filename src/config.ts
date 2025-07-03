@@ -10,6 +10,12 @@ dotenv.config();
 /**
  * 環境変数の型定義
  */
+interface CoreConfig {
+  url: string;
+  serviceRoleKey?: string;
+  anonKey?: string;
+}
+
 interface SecurityConfig {
   jwt: {
     secret: string;
@@ -41,15 +47,21 @@ interface SecurityConfig {
 
 interface DatabaseConfig {
   ksql: {
-    endpoint: string;
-    key?: string;
-    secret?: string;
+    url: string;
+    apiKey?: string;
+    apiSecret?: string;
   };
   schemaRegistry: {
     url: string;
-    user?: string;
-    pass?: string;
+    authUser?: string;
+    authPassword?: string;
+    apiKey?: string;
   };
+}
+
+interface RealtimeConfig {
+  url: string;
+  apiKey?: string;
 }
 
 interface StorageConfig {
@@ -111,6 +123,15 @@ function getBooleanEnvVar(name: string, defaultValue: boolean): boolean {
 }
 
 /**
+ * コア設定
+ */
+export const coreConfig: CoreConfig = {
+  url: getEnvVar('GFTD_URL', 'http://localhost:8088'),
+  serviceRoleKey: getOptionalEnvVar('GFTD_SERVICE_ROLE_KEY'),
+  anonKey: getOptionalEnvVar('GFTD_ANON_KEY'),
+};
+
+/**
  * セキュリティ設定
  */
 export const securityConfig: SecurityConfig = {
@@ -147,25 +168,34 @@ export const securityConfig: SecurityConfig = {
  */
 export const databaseConfig: DatabaseConfig = {
   ksql: {
-    endpoint: getEnvVar('GFTD_KSQLDB_ENDPOINT'),
-    key: getOptionalEnvVar('GFTD_KSQLDB_KEY'),
-    secret: getOptionalEnvVar('GFTD_KSQLDB_SECRET'),
+    url: getEnvVar('GFTD_DB_URL', 'http://localhost:8088'),
+    apiKey: getOptionalEnvVar('GFTD_DB_API_KEY'),
+    apiSecret: getOptionalEnvVar('GFTD_DB_API_SECRET'),
   },
   schemaRegistry: {
-    url: getEnvVar('GFTD_SCHEMA_REGISTRY_URL'),
-    user: getOptionalEnvVar('GFTD_SCHEMA_REGISTRY_USER'),
-    pass: getOptionalEnvVar('GFTD_SCHEMA_REGISTRY_PASS'),
+    url: getEnvVar('GFTD_SCHEMA_REGISTRY_URL', 'http://localhost:8081'),
+    authUser: getOptionalEnvVar('GFTD_SCHEMA_REGISTRY_AUTH_USER'),
+    authPassword: getOptionalEnvVar('GFTD_SCHEMA_REGISTRY_AUTH_PASSWORD'),
+    apiKey: getOptionalEnvVar('GFTD_SCHEMA_REGISTRY_API_KEY'),
   },
+};
+
+/**
+ * リアルタイム設定
+ */
+export const realtimeConfig: RealtimeConfig = {
+  url: getEnvVar('GFTD_REALTIME_URL', 'ws://localhost:8088'),
+  apiKey: getOptionalEnvVar('GFTD_REALTIME_API_KEY'),
 };
 
 /**
  * ストレージ設定
  */
 export const storageConfig: StorageConfig = {
-  endpoint: getEnvVar('GFTD_STORAGE_ENDPOINT'),
-  accessKey: getEnvVar('GFTD_STORAGE_ACCESS_KEY'),
-  secretKey: getEnvVar('GFTD_STORAGE_SECRET_KEY'),
-  bucket: getEnvVar('GFTD_STORAGE_BUCKET'),
+  endpoint: getEnvVar('GFTD_STORAGE_ENDPOINT', 'http://localhost:9000'),
+  accessKey: getEnvVar('GFTD_STORAGE_ACCESS_KEY', 'minioadmin'),
+  secretKey: getEnvVar('GFTD_STORAGE_SECRET_KEY', 'minioadmin'),
+  bucket: getEnvVar('GFTD_STORAGE_BUCKET', 'uploads'),
 };
 
 /**

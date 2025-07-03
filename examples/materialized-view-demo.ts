@@ -124,15 +124,15 @@ async function runMaterializedViewDemo() {
   // 初期化
   await init({
     ksql: {
-      url: process.env.KSQLDB_URL || 'http://localhost:8088',
-      apiKey: process.env.KSQLDB_KEY,
-      apiSecret: process.env.KSQLDB_SECRET,
-    },
-    schemaRegistry: {
-      url: process.env.SCHEMA_REGISTRY_URL || 'http://localhost:8081',
-      auth: {
-        user: process.env.SCHEMA_REGISTRY_USER || 'admin',
-        pass: process.env.SCHEMA_REGISTRY_PASS || 'admin',
+          url: process.env.GFTD_DB_URL || 'http://localhost:8088',
+    apiKey: process.env.GFTD_DB_API_KEY,
+    apiSecret: process.env.GFTD_DB_API_SECRET,
+  },
+  schemaRegistry: {
+    url: process.env.GFTD_SCHEMA_REGISTRY_URL || 'http://localhost:8081',
+    auth: {
+      user: process.env.GFTD_SCHEMA_REGISTRY_AUTH_USER || 'admin',
+      pass: process.env.GFTD_SCHEMA_REGISTRY_AUTH_PASSWORD || 'admin',
       },
     },
   });

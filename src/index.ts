@@ -24,6 +24,9 @@ export * from './security';
 export * from './audit-log';
 export * from './rate-limit';
 
+// 新しい設定を使用するためのヘルパー関数
+import { coreConfig, databaseConfig, realtimeConfig, storageConfig, securityConfig } from './config';
+
 
 import { Database, createDatabase } from './database';
 import { Realtime, createRealtime, RealtimeConfig } from './realtime';
@@ -57,6 +60,48 @@ export interface GftdOrmConfig {
   global?: {
     headers?: Record<string, string>;
     schema?: string;
+  };
+}
+
+/**
+ * 環境変数から設定を作成（設定ファイルの値を使用）
+ */
+export function createConfigFromEnv(): GftdOrmConfig {
+  return {
+    url: coreConfig.url,
+    key: coreConfig.serviceRoleKey,
+    database: {
+      ksql: {
+        url: databaseConfig.ksql.url,
+        apiKey: databaseConfig.ksql.apiKey,
+        apiSecret: databaseConfig.ksql.apiSecret,
+      },
+      schemaRegistry: {
+        url: databaseConfig.schemaRegistry.url,
+        auth: databaseConfig.schemaRegistry.authUser && databaseConfig.schemaRegistry.authPassword 
+          ? {
+              user: databaseConfig.schemaRegistry.authUser,
+              pass: databaseConfig.schemaRegistry.authPassword,
+            }
+          : undefined,
+        apiKey: databaseConfig.schemaRegistry.apiKey,
+      },
+    },
+    realtime: {
+      url: realtimeConfig.url,
+      apiKey: realtimeConfig.apiKey,
+      autoReconnect: true,
+    },
+    storage: {
+      bucketName: storageConfig.bucket,
+      endpoint: storageConfig.endpoint,
+      accessKeyId: storageConfig.accessKey,
+      secretAccessKey: storageConfig.secretKey,
+    },
+    auth: {
+      jwtSecret: securityConfig.jwt.secret,
+      jwtExpiresIn: securityConfig.jwt.expiresIn,
+    },
   };
 }
 
@@ -186,6 +231,14 @@ export function createClient(config: GftdOrmConfig): GftdOrmClient {
   return new GftdOrmClient(config);
 }
 
+/**
+ * 環境変数から自動的にクライアントを作成
+ */
+export function createClientFromEnv(): GftdOrmClient {
+  const config = createConfigFromEnv();
+  return new GftdOrmClient(config);
+}
+
 // 後方互換性のため、既存の関数もエクスポート
 export { init, OrmConfig, defineSchema, defineModel, definePolicy, healthCheck } from './index-legacy';
 
@@ -194,31 +247,42 @@ export { init, OrmConfig, defineSchema, defineModel, definePolicy, healthCheck }
  * 
  * @example
  * ```typescript
- * import { createClient } from 'gftd-orm';
+ * import { createClient, createClientFromEnv } from 'gftd-orm';
  * 
+ * // 環境変数から自動作成
+ * const client = createClientFromEnv();
+ * 
+ * // または手動設定
  * const client = createClient({
- *   url: 'http://localhost:8088',
- *   key: 'your-api-key',
+ *   url: process.env.GFTD_URL!,
+ *   key: process.env.GFTD_SERVICE_ROLE_KEY!,
  *   database: {
  *     ksql: {
- *       url: 'http://localhost:8088',
- *       auth: { username: 'admin', password: 'admin' }
+ *       url: process.env.GFTD_DB_URL!,
+ *       apiKey: process.env.GFTD_DB_API_KEY,
+ *       apiSecret: process.env.GFTD_DB_API_SECRET,
  *     },
  *     schemaRegistry: {
- *       url: 'http://localhost:8081',
- *       auth: { username: 'admin', password: 'admin' }
+ *       url: process.env.GFTD_SCHEMA_REGISTRY_URL!,
+ *       auth: {
+ *         user: process.env.GFTD_SCHEMA_REGISTRY_AUTH_USER!,
+ *         pass: process.env.GFTD_SCHEMA_REGISTRY_AUTH_PASSWORD!,
+ *       },
  *     }
  *   },
  *   realtime: {
- *     url: 'ws://localhost:8088',
+ *     url: process.env.GFTD_REALTIME_URL!,
+ *     apiKey: process.env.GFTD_REALTIME_API_KEY,
  *     autoReconnect: true
  *   },
  *   storage: {
- *     bucketName: 'my-bucket',
- *     endpoint: 'http://localhost:9000'
+ *     bucketName: process.env.GFTD_STORAGE_BUCKET!,
+ *     endpoint: process.env.GFTD_STORAGE_ENDPOINT!,
+ *     accessKeyId: process.env.GFTD_STORAGE_ACCESS_KEY!,
+ *     secretAccessKey: process.env.GFTD_STORAGE_SECRET_KEY!,
  *   },
  *   auth: {
- *     jwtSecret: 'your-jwt-secret'
+ *     jwtSecret: process.env.GFTD_JWT_SECRET!,
  *   }
  * });
  * 
