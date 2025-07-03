@@ -2,35 +2,35 @@
   "name": "@gftdcojp/gftd-orm",
   "version": "0.1.0",
   "description": "Enterprise-grade real-time data platform with ksqlDB, inspired by Supabase architecture",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/src/index.js",
+  "module": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/src/index.js",
+      "require": "./dist/src/index.js",
+      "types": "./dist/src/index.d.ts"
     },
     "./browser": {
-      "import": "./dist/browser-client.js",
-      "require": "./dist/browser-client.js",
-      "types": "./dist/browser-client.d.ts"
+      "import": "./dist/src/browser-client.js",
+      "require": "./dist/src/browser-client.js",
+      "types": "./dist/src/browser-client.d.ts"
     },
     "./server": {
-      "import": "./dist/server-client.js",
-      "require": "./dist/server-client.js",
-      "types": "./dist/server-client.d.ts"
+      "import": "./dist/src/server-client.js",
+      "require": "./dist/src/server-client.js",
+      "types": "./dist/src/server-client.d.ts"
     },
     "./hooks": {
-      "import": "./dist/hooks/useGftdOrm.js",
-      "require": "./dist/hooks/useGftdOrm.js",
-      "types": "./dist/hooks/useGftdOrm.d.ts"
+      "import": "./dist/src/hooks/useGftdOrm.js",
+      "require": "./dist/src/hooks/useGftdOrm.js",
+      "types": "./dist/src/hooks/useGftdOrm.d.ts"
     }
   },
   "files": [
-    "dist",
+    "dist/src",
     "README.md",
-    "package.json"
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsc",
@@ -86,7 +86,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "registry": "https://npm.pkg.github.com/"
+    "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
     "avsc": "^5.7.7",
