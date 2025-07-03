@@ -7,7 +7,7 @@ settings:
 dependencies:
   '@gftdcojp/gftd-orm':
     specifier: ^0.1.0
-    version: 0.1.0(express@5.1.0)(react@18.3.1)
+    version: 0.1.1(express@5.1.0)(react@18.3.1)
   avsc:
     specifier: ^5.7.7
     version: 5.7.7
@@ -59,8 +59,8 @@ devDependencies:
     specifier: ^2.8.17
     version: 2.8.19
   '@types/express':
-    specifier: ^4.17.21
-    version: 4.17.23
+    specifier: ^5.0.3
+    version: 5.0.3
   '@types/jsonwebtoken':
     specifier: ^9.0.0
     version: 9.0.10
@@ -408,8 +408,8 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
 
-  /@gftdcojp/gftd-orm@0.1.0(express@5.1.0)(react@18.3.1):
-    resolution: {integrity: sha512-L1bQuNsTXdUboZhQHSVB+EVlA8Zt9ZeLcltCjGLq+JJuASbZ0HzJgjr+wrSCP3HZYv/EIg+gmDEgJBEciBw0Kg==}
+  /@gftdcojp/gftd-orm@0.1.1(express@5.1.0)(react@18.3.1):
+    resolution: {integrity: sha512-hTff7N6lYNNdjh6ZdYMqdGsq/hP1FRrlymsPSnahLDr+0uX+oIDzFjLRid11JyfKQlL7pKPU2EllsCDkxs3eEQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^18.0.0
@@ -731,8 +731,8 @@ packages:
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
     dev: true
 
-  /@types/express-serve-static-core@4.19.6:
-    resolution: {integrity: sha512-N4LZ2xG7DatVqhCZzOGb1Yi5lMbXSZcmdLDe9EzSndPV2HpWYWzRbaerl2n27irrm94EPpprqa8KpskPT085+A==}
+  /@types/express-serve-static-core@5.0.6:
+    resolution: {integrity: sha512-3xhRnjJPkULekpSzgtoNYYcTWgEZkp4myc+Saevii5JPnHNvHMRlBSHDbs7Bh1iPPoVTERHEZXyhyLbMEsExsA==}
     dependencies:
       '@types/node': 20.19.4
       '@types/qs': 6.14.0
@@ -740,12 +740,11 @@ packages:
       '@types/send': 0.17.5
     dev: true
 
-  /@types/express@4.17.23:
-    resolution: {integrity: sha512-Crp6WY9aTYP3qPi2wGDo9iUe/rceX01UMhnF1jmwDcKCFM6cx7YhGP/Mpr3y9AASpfHixIG0E6azCcL5OcDHsQ==}
+  /@types/express@5.0.3:
+    resolution: {integrity: sha512-wGA0NX93b19/dZC1J18tKWVIYWyyF2ZjT9vin/NRu0qzzvfVzWjs04iq2rQ3H65vCTQYlRqs3YHfY7zjdV+9Kw==}
     dependencies:
       '@types/body-parser': 1.19.6
-      '@types/express-serve-static-core': 4.19.6
-      '@types/qs': 6.14.0
+      '@types/express-serve-static-core': 5.0.6
       '@types/serve-static': 1.15.8
     dev: true
 
