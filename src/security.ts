@@ -5,7 +5,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { securityConfig } from './config';
+import { getSecurityConfig } from './config';
 
 /**
  * パスワード関連の型定義
@@ -103,7 +103,8 @@ export class PasswordManager {
       }
 
       // bcryptでハッシュ化
-      const hash = await bcrypt.hash(password, securityConfig.bcrypt.rounds);
+      const security = getSecurityConfig();
+      const hash = await bcrypt.hash(password, security.bcrypt.rounds);
       
       return {
         success: true,
@@ -159,18 +160,19 @@ export class JWTManager {
    * JWTトークンを生成
    */
   static generateToken(payload: Omit<JWTPayload, 'exp' | 'iat' | 'jti'>): string {
+    const security = getSecurityConfig();
     const now = Math.floor(Date.now() / 1000);
     const jti = crypto.randomUUID();
     
     const fullPayload: JWTPayload = {
       ...payload,
-      exp: now + this.parseExpiresIn(securityConfig.jwt.expiresIn),
+      exp: now + this.parseExpiresIn(security.jwt.expiresIn),
       iat: now,
       jti,
     };
 
-    return jwt.sign(fullPayload, securityConfig.jwt.secret, {
-      algorithm: securityConfig.jwt.algorithm as jwt.Algorithm,
+    return jwt.sign(fullPayload, security.jwt.secret, {
+      algorithm: security.jwt.algorithm as jwt.Algorithm,
     });
   }
 
@@ -179,8 +181,9 @@ export class JWTManager {
    */
   static verifyToken(token: string): JWTVerificationResult {
     try {
-      const payload = jwt.verify(token, securityConfig.jwt.secret, {
-        algorithms: [securityConfig.jwt.algorithm as jwt.Algorithm],
+      const security = getSecurityConfig();
+      const payload = jwt.verify(token, security.jwt.secret, {
+        algorithms: [security.jwt.algorithm as jwt.Algorithm],
       }) as JWTPayload;
 
       // 追加の検証
@@ -207,15 +210,16 @@ export class JWTManager {
    * リフレッシュトークンを生成
    */
   static generateRefreshToken(userId: string): string {
+    const security = getSecurityConfig();
     const payload = {
       sub: userId,
       type: 'refresh',
       jti: crypto.randomUUID(),
     };
 
-    return jwt.sign(payload, securityConfig.jwt.secret, {
+    return jwt.sign(payload, security.jwt.secret, {
       expiresIn: '7d', // リフレッシュトークンは7日間有効
-      algorithm: securityConfig.jwt.algorithm as jwt.Algorithm,
+      algorithm: security.jwt.algorithm as jwt.Algorithm,
     });
   }
 
@@ -224,8 +228,9 @@ export class JWTManager {
    */
   static verifyRefreshToken(token: string): { success: boolean; userId?: string; error?: string } {
     try {
-      const payload = jwt.verify(token, securityConfig.jwt.secret, {
-        algorithms: [securityConfig.jwt.algorithm as jwt.Algorithm],
+      const security = getSecurityConfig();
+      const payload = jwt.verify(token, security.jwt.secret, {
+        algorithms: [security.jwt.algorithm as jwt.Algorithm],
       }) as any;
 
       if (payload.type !== 'refresh') {
@@ -385,6 +390,7 @@ export class SessionManager {
    * セッションを作成
    */
   static createSession(userId: string, data: any): string {
+    const security = getSecurityConfig();
     const sessionId = SecurityHelper.generateSecureId('sess_');
     const session = {
       id: sessionId,
@@ -392,7 +398,7 @@ export class SessionManager {
       data,
       createdAt: new Date(),
       lastAccessedAt: new Date(),
-      expiresAt: new Date(Date.now() + securityConfig.session.timeoutMs),
+      expiresAt: new Date(Date.now() + security.session.timeoutMs),
     };
 
     this.sessions.set(sessionId, session);

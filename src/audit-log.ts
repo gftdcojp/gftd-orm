@@ -4,7 +4,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { securityConfig } from './config';
+import { getSecurityConfig } from './config';
 
 /**
  * 監査ログレベル
@@ -90,9 +90,10 @@ export class AuditLogManager {
   private isProcessing = false;
 
   private constructor() {
+    const security = getSecurityConfig();
     this.config = {
-      enabled: securityConfig.audit.enabled,
-      logFile: securityConfig.audit.logFile,
+      enabled: security.audit.enabled,
+      logFile: security.audit.logFile,
       maxFileSize: 10 * 1024 * 1024, // 10MB
       maxFiles: 10,
       compressRotated: false,
