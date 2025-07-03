@@ -84,12 +84,22 @@ async function websocketTest() {
     try {
       console.log('  🔄 Starting push query (will run for 10 seconds)...');
       
+      // 直接SQLを実行してテスト
+      const directSql = 'SELECT * FROM users_table EMIT CHANGES LIMIT 5;';
+      console.log(`  📝 Direct SQL test: ${directSql}`);
+      
       let dataCount = 0;
       const startTime = Date.now();
 
+      const directTest = await client.sql(directSql);
+      console.log('  ✅ Direct SQL push query successful:', directTest);
+
+      console.log('  🔄 Now testing via Supabase-like API...');
+      
       const { terminate } = await client
         .from('users_table')
         .select('*')
+        .limit(5)
         .stream(
           (data) => {
             dataCount++;

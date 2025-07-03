@@ -281,15 +281,23 @@ export class DatabaseQueryBuilder<T = any> {
       const { buildSelectQuery } = await import('./query-builder');
       const { executePushQuery } = await import('./ksqldb-client');
 
-      // EMIT CHANGES を追加してプッシュクエリにする
-      const query = buildSelectQuery(
-        this.tableName,
-        this.selectFields,
-        this.whereConditions,
-        this.orderByConditions,
-        this.limitValue,
-        this.offsetValue
-      ) + ' EMIT CHANGES';
+             // EMIT CHANGES を追加してプッシュクエリにする
+       let baseQuery = buildSelectQuery(
+         this.tableName,
+         this.selectFields,
+         this.whereConditions,
+         this.orderByConditions,
+         this.limitValue,
+         this.offsetValue
+       );
+       
+       // セミコロンを削除してEMIT CHANGESを追加してからセミコロンを付ける
+       if (baseQuery.endsWith(';')) {
+         baseQuery = baseQuery.slice(0, -1);
+       }
+       const query = baseQuery + ' EMIT CHANGES;';
+       
+       console.log('🔍 Generated push query SQL:', query);
 
       return executePushQuery(
         query,

@@ -125,40 +125,64 @@ export async function executePushQuery(
   let terminated = false;
 
   try {
-    const response = await ksqlClient.post('/query-stream', {
-      sql,
-      properties: {},
-    }, {
-      responseType: 'stream',
+    // ksqlDB専用のaxiosインスタンスを作成（ストリーミング用）
+    const streamClient = axios.create({
+      baseURL: config?.url,
       headers: {
         'Content-Type': 'application/vnd.ksql.v1+json',
         'Accept': 'application/vnd.ksqlapi.delimited.v1',
+        ...(config?.headers || {}),
       },
+      timeout: 0, // ストリーミングの場合はタイムアウトなし
+      responseType: 'stream',
+    });
+
+    // 認証情報を追加
+    if (config?.apiKey && config?.apiSecret) {
+      const credentials = Buffer.from(`${config.apiKey}:${config.apiSecret}`).toString('base64');
+      streamClient.defaults.headers['Authorization'] = `Basic ${credentials}`;
+    }
+
+    const response = await streamClient.post('/query-stream', {
+      sql,
+      properties: {},
     });
 
     let header: any = null;
+    let buffer = '';
 
     response.data.on('data', (chunk: Buffer) => {
       if (terminated) return;
 
       try {
-        const lines = chunk.toString().split('\n').filter((line: string) => line.trim());
+        buffer += chunk.toString();
+        const lines = buffer.split('\n');
+        
+        // 最後の行が不完全な可能性があるので、一つ残しておく
+        buffer = lines.pop() || '';
         
         for (const line of lines) {
-          const data = JSON.parse(line);
+          if (!line.trim()) continue;
           
-          // ヘッダー情報を保存
-          if (!header && data.columnNames) {
-            header = data;
-            queryId = data.queryId;
-          } else if (Array.isArray(data)) {
-            // データ行を処理
-            onData({ header, row: data });
+          try {
+            const data = JSON.parse(line);
+            
+            // ヘッダー情報を保存
+            if (!header && data.columnNames) {
+              header = data;
+              queryId = data.queryId;
+            } else if (Array.isArray(data)) {
+              // データ行を処理
+              onData({ header, row: data });
+            }
+          } catch (parseError) {
+            // 個別行のパースエラーは無視
+            console.warn('Failed to parse line:', line, parseError);
           }
         }
-      } catch (parseError) {
+      } catch (error) {
         if (onError && !terminated) {
-          onError(new Error(`Failed to parse streaming data: ${parseError}`));
+          onError(new Error(`Failed to process streaming data: ${error}`));
         }
       }
     });
@@ -181,6 +205,12 @@ export async function executePushQuery(
         if (terminated) return;
         terminated = true;
 
+        // ストリームを閉じる
+        if (response.data && response.data.destroy) {
+          response.data.destroy();
+        }
+
+        // ksqlDBにクエリ終了を通知
         if (queryId) {
           try {
             await ksqlClient!.post('/close-query', {
@@ -195,7 +225,14 @@ export async function executePushQuery(
 
   } catch (error: any) {
     if (axios.isAxiosError(error)) {
-      const ksqlError = new Error(`ksqlDB push query failed: ${error.response?.data?.message || error.message}`);
+      // 詳細なエラー情報を取得
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.statusText || 
+                          error.message;
+      const statusCode = error.response?.status || 'unknown';
+      
+      const ksqlError = new Error(`ksqlDB push query failed (${statusCode}): ${errorMessage}`);
+      
       if (onError) {
         onError(ksqlError);
       } else {
