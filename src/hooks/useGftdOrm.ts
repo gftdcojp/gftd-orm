@@ -126,7 +126,7 @@ export function useRealtimeSubscription(
  * データフェッチ用のフック
  */
 export function useGftdOrmQuery<T = any>(
-  client: GftdOrmClient | null,
+  client: BrowserClient | null,
   table: string,
   queryBuilder?: (query: any) => any,
   dependencies: any[] = []
@@ -180,7 +180,7 @@ export function useGftdOrmQuery<T = any>(
  * データミューテーション用のフック
  */
 export function useGftdOrmMutation<T = any>(
-  client: GftdOrmClient | null,
+  client: BrowserClient | null,
   table: string
 ) {
   const [loading, setLoading] = useState(false);

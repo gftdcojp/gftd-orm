@@ -8,9 +8,9 @@ import { KsqlDbConfig, SchemaRegistryConfig } from './types';
 
 // 条件付きインポート用の型定義
 type ServerDatabase = typeof import('./database').Database;
-type ClientDatabase = typeof import('./database-client').DatabaseClient;
+type ClientDatabase = typeof import('./database').Database;
 type ServerRealtime = typeof import('./realtime').Realtime;
-type ClientRealtime = typeof import('./realtime-client').RealtimeClient;
+type ClientRealtime = typeof import('./realtime').Realtime;
 
 /**
  * GFTD ORM の統合設定
@@ -45,7 +45,22 @@ export interface GftdOrmConfig {
   // Auth 設定
   auth?: {
     jwtSecret: string;
-    providers?: string[];
+    jwtExpiresIn?: string;
+    allowAnonymous?: boolean;
+    providers?: {
+      google?: {
+        clientId: string;
+        clientSecret: string;
+      };
+      github?: {
+        clientId: string;
+        clientSecret: string;
+      };
+      email?: {
+        enabled: boolean;
+        requireConfirmation?: boolean;
+      };
+    };
   };
   
   // 全般設定
@@ -170,8 +185,8 @@ export class GftdOrmClient {
    */
   private async initializeClient(): Promise<void> {
     // Database初期化（クライアント版）
-    const { createDatabaseClient } = await import('./database-client');
-    this._database = createDatabaseClient({
+    const { createDatabase } = await import('./database');
+    this._database = createDatabase({
       ksql: this.config.database.ksql,
       schemaRegistry: this.config.database.schemaRegistry,
     });
@@ -179,21 +194,21 @@ export class GftdOrmClient {
 
     // Realtime初期化（クライアント版）
     if (this.config.realtime) {
-      const { createRealtimeClient } = await import('./realtime-client');
-      this._realtime = createRealtimeClient(this.config.realtime);
+      const { createRealtime } = await import('./realtime');
+      this._realtime = createRealtime(this.config.realtime);
     }
 
     // Storage初期化（クライアント版）
     if (this.config.storage) {
-      const { createStorageClient } = await import('./storage-client');
-      this._storage = createStorageClient(this.config.storage);
+      const { createStorage } = await import('./storage');
+      this._storage = createStorage(this.config.storage);
       await this._storage.initialize();
     }
 
     // Auth初期化（クライアント版）
     if (this.config.auth) {
-      const { createAuthClient } = await import('./auth-client');
-      this._auth = createAuthClient(this.config.auth);
+      const { createAuth } = await import('./auth');
+      this._auth = createAuth(this.config.auth);
       await this._auth.initialize();
     }
   }
@@ -202,7 +217,7 @@ export class GftdOrmClient {
    * Supabaseライクなテーブルアクセス
    */
   from<T = any>(table: string): any {
-    return this.database.from<T>(table);
+    return this.database.from(table);
   }
 
   /**
