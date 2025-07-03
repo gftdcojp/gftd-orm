@@ -24,7 +24,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: 'https://npm.pkg.github.com/'
+          scope: '@gftdcojp'
 
       - name: Install pnpm
         uses: pnpm/action-setup@v2
@@ -60,10 +61,10 @@ jobs:
           git tag "v$(node -p "require('./package.json').version")"
           git push origin main --tags
 
-      - name: Publish to NPM
+      - name: Publish to GitHub Package Registry
         run: pnpm publish --no-git-checks
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
@@ -78,7 +79,7 @@ jobs:
             
             ## Installation
             ```bash
-            npm install gftd-orm@${{ steps.version.outputs.version }}
+            npm install @gftdcojp/gftd-orm@${{ steps.version.outputs.version }}
             ```
           draft: false
           prerelease: false 

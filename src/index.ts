@@ -23,7 +23,7 @@ export * from './config';
 export * from './security';
 export * from './audit-log';
 export * from './rate-limit';
-export * from './security-middleware';
+
 
 import { Database, createDatabase } from './database';
 import { Realtime, createRealtime, RealtimeConfig } from './realtime';

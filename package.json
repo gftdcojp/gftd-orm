@@ -1,5 +1,5 @@
 {
-  "name": "@junkawasaki/gftd-orm",
+  "name": "@gftdcojp/gftd-orm",
   "version": "0.1.0",
   "description": "Enterprise-grade real-time data platform with ksqlDB, inspired by Supabase architecture",
   "main": "dist/index.js",
@@ -45,16 +45,16 @@
   ],
   "author": {
     "name": "GFTD Team",
-    "url": "https://github.com/junkawasaki"
+    "url": "https://github.com/gftdcojp"
   },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/junkawasaki/gftd-orm.git"
+    "url": "https://github.com/gftdcojp/gftd-orm.git"
   },
-  "homepage": "https://github.com/junkawasaki/gftd-orm#readme",
+  "homepage": "https://github.com/gftdcojp/gftd-orm#readme",
   "bugs": {
-    "url": "https://github.com/junkawasaki/gftd-orm/issues"
+    "url": "https://github.com/gftdcojp/gftd-orm/issues"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -57,11 +57,11 @@ Confluent Schema Registry + ksqlDB を土台に、**Supabase ライクな統合 
 ## 📦 インストール
 
 ```bash
-npm install gftd-orm
+npm install @gftdcojp/gftd-orm
 # または
-yarn add gftd-orm
+yarn add @gftdcojp/gftd-orm
 # または
-pnpm add gftd-orm
+pnpm add @gftdcojp/gftd-orm
 ```
 
 ## 🚀 クイックスタート
@@ -69,7 +69,7 @@ pnpm add gftd-orm
 ### 1. クライアント作成と初期化
 
 ```typescript
-import { createClient } from 'gftd-orm';
+import { createClient } from '@gftdcojp/gftd-orm';
 
 const client = createClient({
   url: 'http://localhost:8088',

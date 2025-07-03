@@ -1,20 +1,21 @@
-# GFTD ORM - NPM Package Publication Guide
+# GFTD ORM - GitHub Package Registry Publication Guide
 
 ## 📋 事前準備
 
-### 1. NPMアカウントの準備
+### 1. GitHub Package Registryの準備
 ```bash
-# NPMアカウントを作成（まだない場合）
-npm adduser
+# GitHub Personal Access Tokenを作成
+# Settings → Developer settings → Personal access tokens → Generate new token
+# 必要な権限: read:packages, write:packages, delete:packages
 
-# または既存アカウントでログイン
-npm login
+# GitHub Package Registryにログイン
+npm login --scope=@gftdcojp --registry=https://npm.pkg.github.com/
 ```
 
 ### 2. パッケージ名の確認
 ```bash
 # パッケージ名が利用可能かチェック
-npm view gftd-orm
+npm view @gftdcojp/gftd-orm --registry=https://npm.pkg.github.com/
 
 # エラーになれば利用可能
 ```
@@ -53,27 +54,27 @@ npm version 1.0.0
 
 ### 3. 公開
 ```bash
-# パッケージを公開
-npm publish
+# GitHub Package Registryに公開
+npm publish --registry=https://npm.pkg.github.com/
 
-# 初回公開時にスコープ付きパッケージを公開する場合
-npm publish --access public
+# または直接
+pnpm publish
 ```
 
 ## 🤖 GitHub Actionsによる自動公開
 
-### 1. NPMトークンの設定
-1. [npmjs.com](https://www.npmjs.com/) にログイン
-2. Access Tokens → Generate New Token → Automation を選択
-3. トークンをコピー
-4. GitHubリポジトリの Settings → Secrets and variables → Actions
-5. `NPM_TOKEN` として追加
+### 1. GitHub Package Registryの設定
+GitHub Package Registryを使用する場合、追加の設定は不要です。
+GitHub Actionsは自動的に`GITHUB_TOKEN`を使用してパッケージを公開します。
+
+ただし、リポジトリの`Settings` → `Actions` → `General` → `Workflow permissions`で
+`Read and write permissions`が有効になっていることを確認してください。
 
 ### 2. 自動公開の方法
 
 #### 方法1: 手動トリガー
 1. GitHubリポジトリの Actions タブを開く
-2. "Manual Publish to NPM" ワークフローを選択
+2. "Manual Publish to GitHub Package Registry" ワークフローを選択
 3. "Run workflow" をクリック
 4. バージョンタイプを選択（patch/minor/major または具体的なバージョン番号）
 5. "Run workflow" で実行
@@ -91,19 +92,25 @@ git push origin v1.0.0
 
 ### インストール
 ```bash
-# NPMから
-npm install gftd-orm
+# GitHub Package Registryから
+npm install @gftdcojp/gftd-orm
 
 # pnpmから
-pnpm add gftd-orm
+pnpm add @gftdcojp/gftd-orm
 
 # yarnから
-yarn add gftd-orm
+yarn add @gftdcojp/gftd-orm
+```
+
+### .npmrc設定（必要に応じて）
+```
+@gftdcojp:registry=https://npm.pkg.github.com/
+//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
 ```
 
 ### 使用例
 ```typescript
-import { createClient } from 'gftd-orm';
+import { createClient } from '@gftdcojp/gftd-orm';
 
 const client = createClient({
   url: 'http://localhost:8088',
@@ -127,7 +134,7 @@ await client.initialize();
 ### よくある問題
 
 1. **403 Forbidden エラー**
-   - NPMトークンが無効または権限不足
+   - GitHub Personal Access Tokenが無効または権限不足
    - パッケージ名が既に使用されている
 
 2. **422 Unprocessable Entity**
@@ -144,11 +151,11 @@ await client.initialize();
 npm pack --dry-run
 
 # 公開前のテスト
-npm publish --dry-run
+npm publish --dry-run --registry=https://npm.pkg.github.com/
 
 # ローカルでパッケージをテスト
 npm pack
-npm install ./gftd-orm-0.1.0.tgz
+npm install ./gftdcojp-gftd-orm-0.1.0.tgz
 ```
 
 ## 📝 チェックリスト
@@ -160,10 +167,10 @@ npm install ./gftd-orm-0.1.0.tgz
 - [ ] ビルドが成功する
 - [ ] 不要なファイルが`.npmignore`に含まれている
 - [ ] バージョンが適切に設定されている
-- [ ] NPMトークンが設定されている
+- [ ] GitHub Personal Access Tokenが設定されている
 
 ### 公開後のチェックリスト
-- [ ] [npmjs.com](https://www.npmjs.com/package/gftd-orm)でパッケージが表示される
+- [ ] [GitHub Packages](https://github.com/gftdcojp/gftd-orm/packages)でパッケージが表示される
 - [ ] インストールが正常に動作する
 - [ ] 型定義が正しく提供される
 - [ ] ドキュメントが正しく表示される
@@ -183,4 +190,21 @@ npm install ./gftd-orm-0.1.0.tgz
 3. **機能拡張**
    - 新機能の追加
    - パフォーマンスの改善
-   - ドキュメントの充実 
+   - ドキュメントの充実
+
+## 📋 現在の設定サマリー
+
+✅ **完了済み設定:**
+- パッケージ名: `@gftdcojp/gftd-orm`
+- GitHub Package Registry設定
+- 自動公開ワークフロー
+- 手動公開ワークフロー  
+- TypeScriptビルド設定
+- テスト実行環境
+- .npmignore設定
+
+🔄 **次に必要なアクション:**
+1. GitHubリポジトリを`gftdcojp/gftd-orm`に作成
+2. Workflow permissions設定
+3. Personal Access Token設定（手動公開用）
+4. 初回公開実行 
