@@ -2,6 +2,7 @@
  * スキーマ定義のテスト
  */
 
+import { describe, test, expect, beforeEach } from 'vitest';
 import { defineSchema, clearSchemaRegistry, getAllSchemas } from '../schema';
 import { FieldType } from '../field-types';
 
