@@ -22,9 +22,9 @@
       "types": "./dist/src/server-client.d.ts"
     },
     "./hooks": {
-      "import": "./dist/src/hooks/useGftdOrm.js",
-      "require": "./dist/src/hooks/useGftdOrm.js",
-      "types": "./dist/src/hooks/useGftdOrm.d.ts"
+      "import": "./dist/src/hooks/index.js",
+      "require": "./dist/src/hooks/index.js",
+      "types": "./dist/src/hooks/index.d.ts"
     }
   },
   "files": [

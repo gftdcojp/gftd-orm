@@ -244,10 +244,10 @@ export async function GET() {
 }
 ```
 
-### React Hooks (Currently in Development)
+### React Hooks
 
 ```typescript
-// Coming in future releases
+// 利用可能な React Hooks
 import { useBrowserClient, useRealtimeSubscription } from '@gftdcojp/gftd-orm/hooks';
 
 function UserList() {
@@ -713,6 +713,8 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for details.
 - [x] **Audit Log System** - Detailed recording of security events
 - [x] **Rate Limiting** - DDoS attack prevention and access control
 - [x] **Encryption Features** - Password hashing and JWT signature verification
+- [x] **React Hooks** - useBrowserClient, useRealtimeSubscription and data management hooks
+- [x] **Docker Compose setup** - Full development environment setup
 
 ### 🔄 In Development
 - [ ] GraphQL API support
@@ -721,8 +723,7 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for details.
 - [ ] CLI tools
 
 ### 📋 Planned
-- [ ] React/Vue.js hooks
-- [ ] Docker Compose setup
+- [ ] Vue.js hooks
 - [ ] AWS/GCP deployment guide
 - [ ] Performance optimization
 - [ ] Internationalization (i18n)

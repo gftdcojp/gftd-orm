@@ -20,8 +20,94 @@ export interface UseGftdOrmResult {
   health: () => Promise<any>;
 }
 
+export interface UseBrowserClientOptions {
+  autoConnect?: boolean;
+  autoReconnect?: boolean;
+}
+
+export interface UseBrowserClientResult {
+  client: BrowserClient | null;
+  isConnected: boolean;
+  isLoading: boolean;
+  error: Error | null;
+  connect: () => Promise<void>;
+  disconnect: () => void;
+  health: () => Promise<any>;
+}
+
 /**
- * GFTD-ORMクライアントのReactフック
+ * ブラウザクライアント専用のReactフック
+ * README.mdで言及されている機能を実装
+ */
+export function useBrowserClient(
+  config: BrowserClientConfig,
+  options: UseBrowserClientOptions = {}
+): UseBrowserClientResult {
+  const [client, setClient] = useState<BrowserClient | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const clientRef = useRef<BrowserClient | null>(null);
+
+  const connect = useCallback(async () => {
+    if (clientRef.current) return;
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const newClient = new BrowserClient(config);
+      await newClient.initialize();
+
+      clientRef.current = newClient;
+      setClient(newClient);
+      setIsConnected(true);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to connect'));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [config]);
+
+  const disconnect = useCallback(() => {
+    if (clientRef.current) {
+      clientRef.current.disconnect();
+      clientRef.current = null;
+      setClient(null);
+      setIsConnected(false);
+    }
+  }, []);
+
+  const health = useCallback(async () => {
+    if (!clientRef.current) {
+      throw new Error('Client is not connected');
+    }
+    return clientRef.current.health();
+  }, []);
+
+  useEffect(() => {
+    if (options.autoConnect !== false) {
+      connect();
+    }
+
+    return () => {
+      disconnect();
+    };
+  }, [connect, disconnect, options.autoConnect]);
+
+  return {
+    client,
+    isConnected,
+    isLoading,
+    error,
+    connect,
+    disconnect,
+    health,
+  };
+}
+
+/**
+ * GFTD-ORMクライアントのReactフック (legacy)
  */
 export function useGftdOrm(
   config: BrowserClientConfig,
@@ -92,8 +178,42 @@ export function useGftdOrm(
 
 /**
  * リアルタイムサブスクリプション用のフック
+ * README.mdの例に合わせて改良
  */
 export function useRealtimeSubscription(
+  client: BrowserClient | null,
+  table: string,
+  event: 'INSERT' | 'UPDATE' | 'DELETE' | '*',
+  callback: (payload: any) => void
+) {
+  const callbackRef = useRef(callback);
+  callbackRef.current = callback;
+
+  useEffect(() => {
+    if (!client?.realtime) return;
+
+    // テーブル名をベースにしたデフォルトのチャンネル名を生成
+    const channelName = `${table}-updates`;
+    const realtimeChannel = client.channel(channelName);
+    
+    const handleEvent = (payload: any) => {
+      callbackRef.current(payload);
+    };
+
+    realtimeChannel.onTable(table, event, handleEvent);
+    realtimeChannel.connect();
+
+    return () => {
+      realtimeChannel.unsubscribe();
+      realtimeChannel.disconnect();
+    };
+  }, [client, table, event]);
+}
+
+/**
+ * カスタムチャンネルでのリアルタイムサブスクリプション用のフック
+ */
+export function useRealtimeSubscriptionWithChannel(
   client: BrowserClient | null,
   channel: string,
   table: string,
@@ -104,7 +224,7 @@ export function useRealtimeSubscription(
   callbackRef.current = callback;
 
   useEffect(() => {
-    if (!client || !client.realtime) return;
+    if (!client?.realtime) return;
 
     const realtimeChannel = client.channel(channel);
     
