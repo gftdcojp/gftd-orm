@@ -12,7 +12,7 @@ import {
   createContextFromUserId,
   debug,
   VERSION,
-} from '../src/index';
+} from '../src/index-legacy';
 
 console.log(`🔧 ksqlDB ORM Mock Demo (Version: ${VERSION})\n`);
 
