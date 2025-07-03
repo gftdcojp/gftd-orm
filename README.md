@@ -2,46 +2,46 @@
 
 Enterprise-grade real-time data platform with ksqlDB, inspired by Supabase architecture
 
-🚀 **Database, Realtime, Storage, Auth** の統合プラットフォーム
+🚀 **Unified platform for Database, Realtime, Storage, Auth**
 
-Confluent Schema Registry + ksqlDB を土台に、**Supabase ライクな統合 API** で Database（型安全な ORM）、Realtime（WebSocket）、Storage（S3 互換）、Auth（JWT 認証）を提供するエンタープライズ向けリアルタイムデータプラットフォームです。
+An enterprise-grade real-time data platform that provides **Supabase-like unified API** for Database (type-safe ORM), Realtime (WebSocket), Storage (S3 compatible), and Auth (JWT authentication) built on Confluent Schema Registry + ksqlDB foundation.
 
-## 🎯 特徴
+## 🎯 Features
 
 ### 🔷 Database
-- **TypeScript 完全対応** - Drizzle ORM ライクな型安全な DSL
-- **ksqlDB 統合** - Stream/Table マッピングとリアルタイム処理  
-- **Row-Level Security** - ポリシーベースの行レベルセキュリティ
-- **Schema Registry** - Avro/JSON Schema 自動管理
+- **Full TypeScript Support** - Type-safe DSL similar to Drizzle ORM
+- **ksqlDB Integration** - Stream/Table mapping with real-time processing  
+- **Row-Level Security** - Policy-based row-level security
+- **Schema Registry** - Automatic Avro/JSON Schema management
 
 ### ⚡ Realtime
-- **WebSocket 通信** - リアルタイムデータ更新
-- **テーブル監視** - INSERT/UPDATE/DELETE イベント
-- **ストリーム監視** - Kafka ストリームイベント
-- **プレゼンス機能** - ユーザーのオンライン状態管理
-- **ブロードキャスト** - リアルタイム通信
+- **WebSocket Communication** - Real-time data updates
+- **Table Monitoring** - INSERT/UPDATE/DELETE events
+- **Stream Monitoring** - Kafka stream events
+- **Presence Features** - User online status management
+- **Broadcast** - Real-time communication
 
 ### 🗄️ Storage
-- **S3 互換** - MinIO/AWS S3 対応
-- **ファイル管理** - アップロード/ダウンロード/削除
-- **署名付きURL** - セキュアなファイルアクセス
-- **バケット管理** - 複数ストレージ管理
+- **S3 Compatible** - MinIO/AWS S3 support
+- **File Management** - Upload/Download/Delete operations
+- **Signed URLs** - Secure file access
+- **Bucket Management** - Multiple storage management
 
 ### 🔐 Auth
-- **JWT 認証** - セキュアなトークンベース認証
-- **OAuth 対応** - Google, GitHub 等のプロバイダー
-- **ユーザー管理** - 登録/ログイン/パスワード管理
-- **セッション管理** - 自動リフレッシュ対応
+- **JWT Authentication** - Secure token-based authentication
+- **OAuth Support** - Google, GitHub and other providers
+- **User Management** - Registration/Login/Password management
+- **Session Management** - Automatic refresh support
 
 ### 🛡️ Security
-- **包括的なセキュリティ** - エンタープライズグレードのセキュリティ機能
-- **SQLインジェクション対策** - パラメータ化クエリとエスケープ処理
-- **レート制限・DDoS対策** - 多層的なアクセス制御
-- **監査ログ** - 全アクティビティの詳細記録
-- **暗号化・ハッシュ化** - bcryptによるパスワード保護
-- **CSRF/XSS対策** - クロスサイト攻撃の防止
+- **Comprehensive Security** - Enterprise-grade security features
+- **SQL Injection Prevention** - Parameterized queries and escape processing
+- **Rate Limiting & DDoS Protection** - Multi-layered access control
+- **Audit Logging** - Detailed recording of all activities
+- **Encryption & Hashing** - bcrypt password protection
+- **CSRF/XSS Protection** - Cross-site attack prevention
 
-## 🏗️ アーキテクチャ
+## 🏗️ Architecture
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -62,41 +62,41 @@ Confluent Schema Registry + ksqlDB を土台に、**Supabase ライクな統合 
                         └─────────────────┘
 ```
 
-## 📦 インストール
+## 📦 Installation
 
 ```bash
 npm install @gftdcojp/gftd-orm
-# または
+# or
 yarn add @gftdcojp/gftd-orm
-# または
+# or
 pnpm add @gftdcojp/gftd-orm
 ```
 
-## 🔥 Next.js 完全対応
+## 🔥 Complete Next.js Support
 
-GFTD-ORMは **Next.js App Router** の **サーバーサイド** と **クライアントサイド** の両方で使用できるように設計されています。
+GFTD-ORM is designed to work seamlessly with **Next.js App Router** on both **server-side** and **client-side**.
 
-### 環境別インポート（Supabaseライク）
+### Environment-specific Imports (Supabase-like)
 
 ```typescript
-// ブラウザ専用（Client Components）- セキュア、軽量
+// Browser-only (Client Components) - Secure, lightweight
 import { createBrowserClient } from '@gftdcojp/gftd-orm/browser';
 
-// サーバー専用（Server Components, API Routes, Server Actions）- 全機能
+// Server-only (Server Components, API Routes, Server Actions) - Full features
 import { createServerClient } from '@gftdcojp/gftd-orm/server';
 
-// 汎用（従来互換、非推奨）
+// Universal (legacy compatibility, deprecated)
 import { createClient } from '@gftdcojp/gftd-orm';
 ```
 
-**🔥 重要：環境別クライアントの利点**
+**🔥 Important: Benefits of Environment-specific Clients**
 
-- **セキュリティ** - ブラウザに機密情報（API秘密鍵など）が送信されない
-- **バンドルサイズ最適化** - 環境に不要な依存関係を除外
-- **型安全性** - 環境ごとに適切なAPIのみ提供
-- **明示性** - 開発者が意図的に環境を選択
+- **Security** - Sensitive information (API secrets, etc.) is not sent to the browser
+- **Bundle Size Optimization** - Excludes unnecessary dependencies for each environment
+- **Type Safety** - Provides only appropriate APIs for each environment
+- **Explicitness** - Developers intentionally choose the environment
 
-### Server Component での使用
+### Usage in Server Components
 
 ```typescript
 // app/page.tsx
@@ -104,29 +104,29 @@ import { createServerClient } from '@gftdcojp/gftd-orm/server';
 
 const client = createServerClient({
   url: process.env.GFTD_URL!,
-  key: process.env.GFTD_SERVICE_ROLE_KEY!, // サーバーでのみ使用可能
+  key: process.env.GFTD_SERVICE_ROLE_KEY!, // Only available on server
   database: {
     ksql: {
       url: process.env.GFTD_DB_URL!,
       apiKey: process.env.GFTD_DB_API_KEY,
-      apiSecret: process.env.GFTD_DB_API_SECRET, // サーバーでのみ使用可能
+      apiSecret: process.env.GFTD_DB_API_SECRET, // Only available on server
     },
     schemaRegistry: {
       url: process.env.GFTD_SCHEMA_REGISTRY_URL!,
       auth: { 
-        user: process.env.GFTD_SCHEMA_REGISTRY_AUTH_USER!, // サーバーでのみ使用可能
-        pass: process.env.GFTD_SCHEMA_REGISTRY_AUTH_PASSWORD! // サーバーでのみ使用可能
+        user: process.env.GFTD_SCHEMA_REGISTRY_AUTH_USER!, // Only available on server
+        pass: process.env.GFTD_SCHEMA_REGISTRY_AUTH_PASSWORD! // Only available on server
       },
     },
   },
   storage: {
     bucketName: process.env.GFTD_STORAGE_BUCKET!,
     endpoint: process.env.GFTD_STORAGE_ENDPOINT!,
-    accessKeyId: process.env.GFTD_STORAGE_ACCESS_KEY!, // サーバーでのみ使用可能
-    secretAccessKey: process.env.GFTD_STORAGE_SECRET_KEY!, // サーバーでのみ使用可能
+    accessKeyId: process.env.GFTD_STORAGE_ACCESS_KEY!, // Only available on server
+    secretAccessKey: process.env.GFTD_STORAGE_SECRET_KEY!, // Only available on server
   },
   auth: {
-    jwtSecret: process.env.GFTD_JWT_SECRET!, // サーバーでのみ使用可能
+    jwtSecret: process.env.GFTD_JWT_SECRET!, // Only available on server
   },
 });
 
@@ -141,7 +141,7 @@ export default async function Page() {
 
   return (
     <div>
-      <h1>ユーザー一覧</h1>
+      <h1>User List</h1>
       {users.map(user => (
         <div key={user.id}>{user.name}</div>
       ))}
@@ -150,7 +150,7 @@ export default async function Page() {
 }
 ```
 
-### Client Component でのリアルタイム
+### Realtime in Client Components
 
 ```typescript
 // app/realtime-dashboard.tsx
@@ -161,23 +161,23 @@ import { createBrowserClient } from '@gftdcojp/gftd-orm/browser';
 
 const client = createBrowserClient({
   url: process.env.NEXT_PUBLIC_GFTD_URL!,
-  key: process.env.NEXT_PUBLIC_GFTD_ANON_KEY!, // 公開APIキーのみ
+  key: process.env.NEXT_PUBLIC_GFTD_ANON_KEY!, // Public API key only
   database: {
     ksql: {
       url: process.env.NEXT_PUBLIC_GFTD_DB_URL!,
-      apiKey: process.env.NEXT_PUBLIC_GFTD_DB_API_KEY, // 公開APIキーのみ
-      // apiSecret は使用不可（セキュリティ）
+      apiKey: process.env.NEXT_PUBLIC_GFTD_DB_API_KEY, // Public API key only
+      // apiSecret is not available (security)
     },
     schemaRegistry: {
       url: process.env.NEXT_PUBLIC_GFTD_SCHEMA_REGISTRY_URL!,
-      apiKey: process.env.NEXT_PUBLIC_GFTD_SCHEMA_REGISTRY_API_KEY, // 公開APIキーのみ
+      apiKey: process.env.NEXT_PUBLIC_GFTD_SCHEMA_REGISTRY_API_KEY, // Public API key only
     },
   },
   realtime: {
     url: process.env.NEXT_PUBLIC_GFTD_REALTIME_URL!,
-    apiKey: process.env.NEXT_PUBLIC_GFTD_REALTIME_API_KEY, // 公開APIキーのみ
+    apiKey: process.env.NEXT_PUBLIC_GFTD_REALTIME_API_KEY, // Public API key only
   },
-  // storage, authは制限付き（URLのみ）
+  // storage, auth are limited (URL only)
 });
 
 export default function RealtimeDashboard() {
@@ -189,10 +189,10 @@ export default function RealtimeDashboard() {
       await client.initialize();
       setIsConnected(true);
 
-      // リアルタイム監視
+      // Real-time monitoring
       const channel = client.channel('user-updates');
       channel.onTable('users', 'INSERT', (payload) => {
-        console.log('新しいユーザー:', payload);
+        console.log('New user:', payload);
         setUsers(prev => [...prev, payload.new]);
       });
       await channel.connect();
@@ -203,14 +203,14 @@ export default function RealtimeDashboard() {
 
   return (
     <div>
-      <p>接続状態: {isConnected ? '接続済み' : '未接続'}</p>
-      <p>ユーザー数: {users.length}</p>
+      <p>Connection Status: {isConnected ? 'Connected' : 'Disconnected'}</p>
+      <p>User Count: {users.length}</p>
     </div>
   );
 }
 ```
 
-### API Routes での使用
+### Usage in API Routes
 
 ```typescript
 // app/api/users/route.ts
@@ -220,18 +220,18 @@ import { createServerClient } from '@gftdcojp/gftd-orm/server';
 export async function GET() {
   const client = createServerClient({
     url: process.env.GFTD_URL!,
-    key: process.env.GFTD_SERVICE_ROLE_KEY!, // サーバーでのみ安全
+    key: process.env.GFTD_SERVICE_ROLE_KEY!, // Safe on server only
     database: {
       ksql: {
         url: process.env.GFTD_DB_URL!,
         apiKey: process.env.GFTD_DB_API_KEY,
-        apiSecret: process.env.GFTD_DB_API_SECRET, // サーバーでのみ安全
+        apiSecret: process.env.GFTD_DB_API_SECRET, // Safe on server only
       },
       schemaRegistry: {
         url: process.env.GFTD_SCHEMA_REGISTRY_URL!,
         auth: { 
-          user: process.env.GFTD_SCHEMA_REGISTRY_AUTH_USER!, // サーバーでのみ安全
-          pass: process.env.GFTD_SCHEMA_REGISTRY_AUTH_PASSWORD! // サーバーでのみ安全
+          user: process.env.GFTD_SCHEMA_REGISTRY_AUTH_USER!, // Safe on server only
+          pass: process.env.GFTD_SCHEMA_REGISTRY_AUTH_PASSWORD! // Safe on server only
         },
       },
     },
@@ -244,10 +244,10 @@ export async function GET() {
 }
 ```
 
-### React Hooks（現在開発中）
+### React Hooks (Currently in Development)
 
 ```typescript
-// 将来のリリースで提供予定
+// Coming in future releases
 import { useBrowserClient, useRealtimeSubscription } from '@gftdcojp/gftd-orm/hooks';
 
 function UserList() {
@@ -260,76 +260,75 @@ function UserList() {
     },
   });
 
-  // リアルタイム監視
+  // Real-time monitoring
   useRealtimeSubscription(client, 'users', 'INSERT', (payload) => {
-    console.log('新しいユーザー:', payload);
+    console.log('New user:', payload);
   });
 
   return (
     <div>
-      <p>接続状態: {isConnected ? '接続済み' : '未接続'}</p>
+      <p>Connection Status: {isConnected ? 'Connected' : 'Disconnected'}</p>
     </div>
   );
 }
 ```
-```
 
-### 環境変数設定
+### Environment Variables Configuration
 
 ```bash
-# .env.local (Next.js プロジェクト)
+# .env.local (Next.js project)
 
-# 🔒 サーバー専用（機密情報）
+# 🔒 Server-only (Sensitive information)
 GFTD_URL=http://localhost:8088
-GFTD_SERVICE_ROLE_KEY=your-service-role-key       # ⚠️ 機密情報
-GFTD_JWT_SECRET=your-super-secret-jwt-key         # ⚠️ 機密情報
+GFTD_SERVICE_ROLE_KEY=your-service-role-key       # ⚠️ Sensitive
+GFTD_JWT_SECRET=your-super-secret-jwt-key         # ⚠️ Sensitive
 
 # Database (ksqlDB)
 GFTD_DB_URL=http://localhost:8088
 GFTD_DB_API_KEY=your-api-key
-GFTD_DB_API_SECRET=your-secret-key                # ⚠️ 機密情報
+GFTD_DB_API_SECRET=your-secret-key                # ⚠️ Sensitive
 
 # Schema Registry
 GFTD_SCHEMA_REGISTRY_URL=http://localhost:8081
-GFTD_SCHEMA_REGISTRY_AUTH_USER=admin              # ⚠️ 機密情報
-GFTD_SCHEMA_REGISTRY_AUTH_PASSWORD=admin          # ⚠️ 機密情報
+GFTD_SCHEMA_REGISTRY_AUTH_USER=admin              # ⚠️ Sensitive
+GFTD_SCHEMA_REGISTRY_AUTH_PASSWORD=admin          # ⚠️ Sensitive
 
 # Storage (S3 Compatible)
 GFTD_STORAGE_ENDPOINT=http://localhost:9000
-GFTD_STORAGE_ACCESS_KEY=minioadmin                # ⚠️ 機密情報
-GFTD_STORAGE_SECRET_KEY=minioadmin                # ⚠️ 機密情報
+GFTD_STORAGE_ACCESS_KEY=minioadmin                # ⚠️ Sensitive
+GFTD_STORAGE_SECRET_KEY=minioadmin                # ⚠️ Sensitive
 GFTD_STORAGE_BUCKET=uploads
 
 # Realtime
 GFTD_REALTIME_URL=ws://localhost:8088
-GFTD_REALTIME_API_KEY=your-realtime-api-key       # ⚠️ 機密情報
+GFTD_REALTIME_API_KEY=your-realtime-api-key       # ⚠️ Sensitive
 
-# 🌍 クライアント公開用（NEXT_PUBLIC_ プレフィックス）
+# 🌍 Client public (NEXT_PUBLIC_ prefix)
 NEXT_PUBLIC_GFTD_URL=http://localhost:8088
-NEXT_PUBLIC_GFTD_ANON_KEY=your-anon-key           # 📢 公開用キー
+NEXT_PUBLIC_GFTD_ANON_KEY=your-anon-key           # 📢 Public key
 
-# Database (ksqlDB) - クライアント用
+# Database (ksqlDB) - Client
 NEXT_PUBLIC_GFTD_DB_URL=http://localhost:8088
-NEXT_PUBLIC_GFTD_DB_API_KEY=your-public-api-key   # 📢 公開用キー
+NEXT_PUBLIC_GFTD_DB_API_KEY=your-public-api-key   # 📢 Public key
 
-# Schema Registry - クライアント用
+# Schema Registry - Client
 NEXT_PUBLIC_GFTD_SCHEMA_REGISTRY_URL=http://localhost:8081
-NEXT_PUBLIC_GFTD_SCHEMA_REGISTRY_API_KEY=your-public-schema-key  # 📢 公開用キー
+NEXT_PUBLIC_GFTD_SCHEMA_REGISTRY_API_KEY=your-public-schema-key  # 📢 Public key
 
-# Realtime - クライアント用
+# Realtime - Client
 NEXT_PUBLIC_GFTD_REALTIME_URL=ws://localhost:8088
-NEXT_PUBLIC_GFTD_REALTIME_API_KEY=your-public-realtime-key      # 📢 公開用キー
+NEXT_PUBLIC_GFTD_REALTIME_API_KEY=your-public-realtime-key      # 📢 Public key
 ```
 
-**🔐 セキュリティ重要事項：**
+**🔐 Critical Security Notes:**
 
-- `NEXT_PUBLIC_*` 変数はブラウザに送信されるため、**公開用APIキー**のみ設定
-- `GFTD_SERVICE_ROLE_KEY`, `GFTD_DB_API_SECRET`, `GFTD_SCHEMA_REGISTRY_AUTH_*`, `GFTD_STORAGE_*_KEY`, `GFTD_JWT_SECRET` などは**絶対に**`NEXT_PUBLIC_*`にしない
-- ブラウザクライアントは読み取り専用操作のみ、書き込みはサーバー経由を推奨
+- `NEXT_PUBLIC_*` variables are sent to the browser, so only set **public API keys**
+- `GFTD_SERVICE_ROLE_KEY`, `GFTD_DB_API_SECRET`, `GFTD_SCHEMA_REGISTRY_AUTH_*`, `GFTD_STORAGE_*_KEY`, `GFTD_JWT_SECRET` should **NEVER** be prefixed with `NEXT_PUBLIC_*`
+- Browser clients are recommended for read-only operations; write operations should go through the server
 
-## 🚀 クイックスタート
+## 🚀 Quick Start
 
-### 1. クライアント作成と初期化
+### 1. Client Creation and Initialization
 
 ```typescript
 import { createClient } from '@gftdcojp/gftd-orm';
@@ -338,7 +337,7 @@ const client = createClient({
   url: process.env.GFTD_URL!,
   key: process.env.GFTD_SERVICE_ROLE_KEY!,
   
-  // Database設定（必須）
+  // Database configuration (required)
   database: {
     ksql: {
       url: process.env.GFTD_DB_URL!,
@@ -354,14 +353,14 @@ const client = createClient({
     },
   },
   
-  // Realtime設定（オプション）
+  // Realtime configuration (optional)
   realtime: {
     url: process.env.GFTD_REALTIME_URL!,
     apiKey: process.env.GFTD_REALTIME_API_KEY!,
     autoReconnect: true,
   },
   
-  // Storage設定（オプション）
+  // Storage configuration (optional)
   storage: {
     bucketName: process.env.GFTD_STORAGE_BUCKET!,
     endpoint: process.env.GFTD_STORAGE_ENDPOINT!,
@@ -369,20 +368,20 @@ const client = createClient({
     secretAccessKey: process.env.GFTD_STORAGE_SECRET_KEY!,
   },
   
-  // Auth設定（オプション）
+  // Auth configuration (optional)
   auth: {
     jwtSecret: process.env.GFTD_JWT_SECRET!,
   },
 });
 
-// 初期化
+// Initialize
 await client.initialize();
 ```
 
-### 2. Database 操作（Supabaseライク）
+### 2. Database Operations (Supabase-like)
 
 ```typescript
-// データ取得
+// Data retrieval
 const { data, error } = await client
   .from('users')
   .select('*')
@@ -391,138 +390,138 @@ const { data, error } = await client
   .limit(10)
   .execute();
 
-// データ挿入
+// Data insertion
 const { data: newUser } = await client
   .from('users')
   .insert({
-    name: '田中太郎',
-    email: 'tanaka@example.com',
+    name: 'John Doe',
+    email: 'john@example.com',
     status: 'active',
   });
 
-// データ更新
+// Data update
 const { data: updatedUser } = await client
   .from('users')
   .eq('id', 'user-123')
   .update({ status: 'premium' });
 
-// データ削除
+// Data deletion
 const { data } = await client
   .from('users')
   .eq('id', 'user-123')
   .delete();
 
-// SQL直接実行
+// Direct SQL execution
 const result = await client.sql('SELECT COUNT(*) FROM users_table');
 ```
 
-### 3. Realtime 監視
+### 3. Realtime Monitoring
 
 ```typescript
-// チャンネル作成
+// Create channel
 const channel = client.channel('user-changes');
 
-// テーブル変更監視
+// Table change monitoring
 channel.onTable('users', 'INSERT', (payload) => {
-  console.log('新しいユーザー:', payload);
+  console.log('New user:', payload);
 });
 
 channel.onTable('users', 'UPDATE', (payload) => {
-  console.log('ユーザー更新:', payload);
+  console.log('User updated:', payload);
 });
 
-// ストリーム監視
+// Stream monitoring
 channel.onStream('messages', (payload) => {
-  console.log('新しいメッセージ:', payload);
+  console.log('New message:', payload);
 });
 
-// ブロードキャスト
+// Broadcast
 channel.onBroadcast('notifications', (payload) => {
-  console.log('通知:', payload);
+  console.log('Notification:', payload);
 });
 
-// プレゼンス機能
+// Presence features
 channel.presence.track({ status: 'online' });
 channel.presence.onChange((payload) => {
-  console.log('プレゼンス変更:', payload);
+  console.log('Presence changed:', payload);
 });
 
-// 接続開始
+// Start connection
 await channel.connect();
 
-// メッセージ送信
+// Send message
 await channel.broadcast('notifications', {
   type: 'user_joined',
-  user: 'tanaka@example.com',
+  user: 'john@example.com',
 });
 ```
 
-### 4. Storage 操作
+### 4. Storage Operations
 
 ```typescript
-// ファイルアップロード
+// File upload
 const { data: file } = await client.storage.upload(
   'avatars/user.jpg',
   fileBuffer,
   { contentType: 'image/jpeg' }
 );
 
-// ファイルダウンロード
+// File download
 const { data: fileData } = await client.storage.download('avatars/user.jpg');
 
-// ファイル一覧
+// File listing
 const { data: files } = await client.storage.list('avatars/');
 
-// 署名付きURL生成
+// Generate signed URL
 const { data: signedUrl } = client.storage.createSignedUrl('avatars/user.jpg', 3600);
 
-// 公開URL取得
+// Get public URL
 const { data: publicUrl } = client.storage.getPublicUrl('avatars/user.jpg');
 
-// バケット管理
+// Bucket management
 await client.storage.bucket.create('new-bucket', { public: false });
 const { data: buckets } = await client.storage.bucket.list();
 ```
 
-### 5. Auth 認証
+### 5. Auth Authentication
 
 ```typescript
-// ユーザー登録
+// User registration
 const { data: session } = await client.auth.signUp({
   email: 'user@example.com',
   password: 'password',
   options: { data: { name: 'User Name' } },
 });
 
-// ログイン
+// Login
 const { data: session } = await client.auth.signIn({
   email: 'user@example.com',
   password: 'password',
 });
 
-// OAuth ログイン
+// OAuth login
 const { data: session } = await client.auth.signInWithOAuth('google');
 
-// 現在のユーザー取得
+// Get current user
 const user = client.auth.getUser();
 
-// ユーザー情報更新
+// Update user information
 const { data: updatedUser } = await client.auth.updateUser({
   user_metadata: { theme: 'dark' },
 });
 
-// ログアウト
+// Logout
 await client.auth.signOut();
 
-// 認証状態監視
+// Auth state monitoring
 const unsubscribe = client.auth.onAuthStateChange((event, session) => {
-  console.log('認証状態変更:', event, session);
+  console.log('Auth state changed:', event, session);
 });
 ```
 
-## 🔧 スキーマ＆モデル定義（従来のAPI）
+## 🔧 Schema & Model Definition (Legacy API)
 
-### スキーマ定義
+### Schema Definition
 
 ```typescript
 import { defineSchema, FieldType } from 'gftd-orm';
@@ -536,7 +535,7 @@ export const UserSchema = defineSchema('User', {
 });
 ```
 
-### モデル定義
+### Model Definition
 
 ```typescript
 import { defineModel, StreamType } from 'gftd-orm';
@@ -549,7 +548,7 @@ export const User = defineModel({
 });
 ```
 
-### RLS ポリシー定義
+### RLS Policy Definition
 
 ```typescript
 import { definePolicy } from 'gftd-orm';
@@ -559,50 +558,50 @@ definePolicy(UserSchema.name, (ctx) => {
 });
 ```
 
-## 📋 利用可能なコマンド
+## 📋 Available Commands
 
 ```bash
-# 依存関係のインストール
+# Install dependencies
 pnpm install
 
-# 開発（ウォッチモード）
+# Development (watch mode)
 pnpm dev
 
-# ビルド
+# Build
 pnpm build
 
-# テスト実行
-pnpm test                  # Vitest による高速テスト実行
-pnpm test:watch           # ウォッチモードでテスト実行
-pnpm test:coverage        # カバレッジ付きテスト実行
-pnpm test:ui              # Vitest UI でテスト実行
-pnpm test:benchmark       # ベンチマークテスト実行
+# Run tests
+pnpm test                  # Fast test execution with Vitest
+pnpm test:watch           # Test execution in watch mode
+pnpm test:coverage        # Test execution with coverage
+pnpm test:ui              # Test execution with Vitest UI
+pnpm test:benchmark       # Benchmark test execution
 
-# デモ実行
-pnpm demo                 # モックデモ
-pnpm demo:real            # 実際のサービス接続デモ
-pnpm demo:gftd            # 新しい統合デモ
-pnpm demo:mv              # Materialized View デモ
+# Run demos
+pnpm demo                 # Mock demo
+pnpm demo:real            # Real service connection demo
+pnpm demo:gftd            # New integrated demo
+pnpm demo:mv              # Materialized View demo
 
-# コード品質
-pnpm lint                 # ESLint でコードチェック
-pnpm format               # Prettier でコードフォーマット
+# Code quality
+pnpm lint                 # Code check with ESLint
+pnpm format               # Code formatting with Prettier
 ```
 
-## 🎯 実装例
+## 🎯 Implementation Examples
 
-詳細な実装例は以下を参照してください：
+See the detailed implementation examples:
 
-- [examples/gftd-orm-demo.ts](examples/gftd-orm-demo.ts) - 統合デモ（全機能）
-- [examples/mock-demo.ts](examples/mock-demo.ts) - モックデモ
-- [examples/demo.ts](examples/demo.ts) - 従来のAPI
+- [examples/gftd-orm-demo.ts](examples/gftd-orm-demo.ts) - Integrated demo (all features)
+- [examples/mock-demo.ts](examples/mock-demo.ts) - Mock demo
+- [examples/demo.ts](examples/demo.ts) - Legacy API
 
-## 📚 ドキュメント
+## 📚 Documentation
 
-- [**SECURITY.md**](SECURITY.md) - 包括的なセキュリティガイド
-- [**env.example**](env.example) - 環境変数設定例
+- [**SECURITY.md**](SECURITY.md) - Comprehensive security guide
+- [**env.example**](env.example) - Environment variable configuration example
 
-## 🏥 ヘルスチェック
+## 🏥 Health Check
 
 ```typescript
 const health = await client.health();
@@ -615,9 +614,9 @@ console.log(health);
 // }
 ```
 
-## 🔧 設定オプション
+## 🔧 Configuration Options
 
-### Database設定
+### Database Configuration
 
 ```typescript
 database: {
@@ -635,7 +634,7 @@ database: {
 }
 ```
 
-### Realtime設定
+### Realtime Configuration
 
 ```typescript
 realtime: {
@@ -647,7 +646,7 @@ realtime: {
 }
 ```
 
-### Storage設定
+### Storage Configuration
 
 ```typescript
 storage: {
@@ -660,7 +659,7 @@ storage: {
 }
 ```
 
-### Auth設定
+### Auth Configuration
 
 ```typescript
 auth: {
@@ -684,76 +683,76 @@ auth: {
 }
 ```
 
-## 🔧 開発・CI/CD
+## 🔧 Development & CI/CD
 
-### テスト環境
-- **Vitest**: 高速で軽量なテストランナー
-- **カバレッジ**: v8 プロバイダーによる詳細なカバレッジレポート
-- **UI テスト**: ブラウザベースのテストUI
-- **ベンチマーク**: パフォーマンステストの自動実行
+### Testing Environment
+- **Vitest**: Fast and lightweight test runner
+- **Coverage**: Detailed coverage reports with v8 provider
+- **UI Testing**: Browser-based test UI
+- **Benchmarks**: Automatic performance test execution
 
-### CI/CD パイプライン
-- **自動テスト**: Node.js 18.x, 20.x でのマトリックステスト
-- **セキュリティスキャン**: CodeQL、依存関係監査、シークレットスキャン
-- **パフォーマンス監視**: 週次ベンチマーク、メモリリークテスト
-- **自動デプロイ**: GitHub Packages への自動発行
-- **依存関係更新**: Dependabot による週次更新
+### CI/CD Pipeline
+- **Automated Testing**: Matrix testing on Node.js 18.x, 20.x
+- **Security Scanning**: CodeQL, dependency audit, secret scanning
+- **Performance Monitoring**: Weekly benchmarks, memory leak tests
+- **Automated Deployment**: Automatic publishing to GitHub Packages
+- **Dependency Updates**: Weekly updates with Dependabot
 
-### 品質保証
-- **型安全性**: TypeScript strict mode
-- **コードスタイル**: ESLint + Prettier
-- **セキュリティ**: SQLインジェクション対策、入力バリデーション
-- **監視**: アラート付きパフォーマンス監視
+### Quality Assurance
+- **Type Safety**: TypeScript strict mode
+- **Code Style**: ESLint + Prettier
+- **Security**: SQL injection prevention, input validation
+- **Monitoring**: Performance monitoring with alerts
 
-詳細は [DEVELOPMENT.md](DEVELOPMENT.md) を参照してください。
+See [DEVELOPMENT.md](DEVELOPMENT.md) for details.
 
 ## 🚧 Roadmap
 
-### ✅ 完了済み
-- [x] **セキュリティ強化** - 包括的なエンタープライズセキュリティ機能
-- [x] **監査ログシステム** - セキュリティイベントの詳細記録
-- [x] **レート制限機能** - DDoS攻撃対策とアクセス制御
-- [x] **暗号化機能** - パスワードハッシュ化とJWT署名検証
+### ✅ Completed
+- [x] **Security Enhancement** - Comprehensive enterprise security features
+- [x] **Audit Log System** - Detailed recording of security events
+- [x] **Rate Limiting** - DDoS attack prevention and access control
+- [x] **Encryption Features** - Password hashing and JWT signature verification
 
-### 🔄 開発中
-- [ ] GraphQL API 対応
-- [ ] Edge Functions 対応
+### 🔄 In Development
+- [ ] GraphQL API support
+- [ ] Edge Functions support
 - [ ] Analytics & Monitoring
-- [ ] CLI ツール
+- [ ] CLI tools
 
-### 📋 計画中
-- [ ] React/Vue.js フック
-- [ ] Docker Compose セットアップ
-- [ ] AWS/GCP デプロイガイド
-- [ ] パフォーマンス最適化
-- [ ] 国際化対応 (i18n)
+### 📋 Planned
+- [ ] React/Vue.js hooks
+- [ ] Docker Compose setup
+- [ ] AWS/GCP deployment guide
+- [ ] Performance optimization
+- [ ] Internationalization (i18n)
 
-## 📝 ライセンス
+## 📝 License
 
-**Business Source License (No Expiration)** - 詳細は [LICENSE](LICENSE) ファイルを参照してください。
+**Business Source License (No Expiration)** - See the [LICENSE](LICENSE) file for details.
 
-### 🎯 ライセンス概要
+### 🎯 License Summary
 
-- ✅ **個人・教育・研究目的**: 自由に使用可能
-- ✅ **内部利用**: 組織内での使用OK
-- ✅ **非商用プロジェクト**: 自由に使用可能
-- ✅ **コントリビューション**: 改良・貢献歓迎
-- ⚠️ **競合サービス**: 直接競合するサービスでの利用は制限
-- ⚠️ **マネージドサービス**: ホスティングサービスでの提供は制限
-- 💼 **商用利用**: 商用ライセンスについては gftdcojp にお問い合わせください
+- ✅ **Personal, Educational, Research**: Free to use
+- ✅ **Internal Use**: OK for organizational use
+- ✅ **Non-commercial Projects**: Free to use
+- ✅ **Contributions**: Improvements and contributions welcome
+- ⚠️ **Competing Services**: Restrictions on use in directly competing services
+- ⚠️ **Managed Services**: Restrictions on hosting service offerings
+- 💼 **Commercial Use**: Contact gftdcojp for commercial licensing
 
-## 🤝 貢献
+## 🤝 Contributing
 
-プルリクエストやイシューを歓迎します。
+Pull requests and issues are welcome.
 
-### 貢献方法
+### How to Contribute
 
-1. このリポジトリをフォーク
-2. フィーチャーブランチを作成 (`git checkout -b feature/AmazingFeature`)
-3. 変更をコミット (`git commit -m 'Add some AmazingFeature'`)
-4. ブランチにプッシュ (`git push origin feature/AmazingFeature`)
-5. プルリクエストを作成
+1. Fork this repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Create a Pull Request
 
 ---
 
-GFTD ORM により、**Supabase ライクな開発体験**で **Kafka ベースのリアルタイムデータプラットフォーム**を構築できます。🚀
+With GFTD ORM, you can build **Kafka-based real-time data platforms** with a **Supabase-like developer experience**. 🚀

@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@gftdcojp/gftd-orm':
+    specifier: ^0.1.0
+    version: 0.1.0(express@5.1.0)(react@18.3.1)
   avsc:
     specifier: ^5.7.7
     version: 5.7.7
@@ -404,6 +407,33 @@ packages:
     resolution: {integrity: sha512-d9zaMRSTIKDLhctzH12MtXvJKSSUhaHcjV+2Z+GK+EEY7XKpP5yR4x+N3TAcHTcu963nIr+TMcCb4DBCYX1z6Q==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
+
+  /@gftdcojp/gftd-orm@0.1.0(express@5.1.0)(react@18.3.1):
+    resolution: {integrity: sha512-L1bQuNsTXdUboZhQHSVB+EVlA8Zt9ZeLcltCjGLq+JJuASbZ0HzJgjr+wrSCP3HZYv/EIg+gmDEgJBEciBw0Kg==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      react: ^18.0.0
+    dependencies:
+      avsc: 5.7.7
+      axios: 1.10.0
+      bcryptjs: 2.4.3
+      cors: 2.8.5
+      dotenv: 16.6.1
+      express-rate-limit: 7.5.1(express@5.1.0)
+      express-slow-down: 2.1.0(express@5.1.0)
+      express-validator: 7.2.1
+      helmet: 7.2.0
+      jsonwebtoken: 9.0.2
+      react: 18.3.1
+      uuid: 9.0.1
+      winston: 3.17.0
+      ws: 8.18.3
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - express
+      - utf-8-validate
+    dev: false
 
   /@humanwhocodes/config-array@0.13.0:
     resolution: {integrity: sha512-DZLEEqFWQFiyK6h5YIeynKx7JlvCYWL0cImfSRXZ9l4Sg2efkFGTuFf6vzXjK1cq6IYkU+Eg/JizXw+TD2vRNw==}
