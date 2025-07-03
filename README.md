@@ -51,262 +51,11 @@ yarn add @gftdcojp/gftd-orm
 pnpm add @gftdcojp/gftd-orm
 ```
 
-## 🔥 Complete Next.js Support
 
-GFTD-ORM is designed to work seamlessly with **Next.js App Router** on both **server-side** and **client-side**.
-
-### Environment-specific Imports
-
-```typescript
-// Browser-only (Client Components) - Lightweight
-import { createBrowserClient } from '@gftdcojp/gftd-orm/browser';
-
-// Server-only (Server Components, API Routes, Server Actions) - Full features
-import { createServerClient } from '@gftdcojp/gftd-orm/server';
-
-// Universal (legacy compatibility)
-import { createClient } from '@gftdcojp/gftd-orm';
-```
-
-**🔥 Important: Benefits of Environment-specific Clients**
-
-- **Bundle Size Optimization** - Excludes unnecessary dependencies for each environment
-- **Type Safety** - Provides only appropriate APIs for each environment
-- **Explicitness** - Developers intentionally choose the environment
-
-### Usage in Server Components
-
-```typescript
-// app/page.tsx
-import { createServerClient } from '@gftdcojp/gftd-orm/server';
-
-const client = createServerClient({
-  url: process.env.GFTD_URL!,
-  key: process.env.GFTD_SERVICE_ROLE_KEY!, // Only available on server
-  database: {
-    ksql: {
-      url: process.env.GFTD_DB_URL!,
-      apiKey: process.env.GFTD_DB_API_KEY,
-      apiSecret: process.env.GFTD_DB_API_SECRET, // Only available on server
-    },
-    schemaRegistry: {
-      url: process.env.GFTD_SCHEMA_REGISTRY_URL!,
-      auth: { 
-        user: process.env.GFTD_SCHEMA_REGISTRY_AUTH_USER!, // Only available on server
-        pass: process.env.GFTD_SCHEMA_REGISTRY_AUTH_PASSWORD! // Only available on server
-      },
-    },
-  },
-  storage: {
-    bucketName: process.env.GFTD_STORAGE_BUCKET!,
-    endpoint: process.env.GFTD_STORAGE_ENDPOINT!,
-    accessKeyId: process.env.GFTD_STORAGE_ACCESS_KEY!, // Only available on server
-    secretAccessKey: process.env.GFTD_STORAGE_SECRET_KEY!, // Only available on server
-  },
-  auth: {
-    jwtSecret: process.env.GFTD_JWT_SECRET!, // Only available on server
-  },
-});
-
-export default async function Page() {
-  await client.initialize();
-  
-  const { data: users } = await client
-    .from('users')
-    .select('*')
-    .eq('status', 'active')
-    .execute();
-
-  return (
-    <div>
-      <h1>User List</h1>
-      {users.map(user => (
-        <div key={user.id}>{user.name}</div>
-      ))}
-    </div>
-  );
-}
-```
-
-### Realtime in Client Components
-
-```typescript
-// app/realtime-dashboard.tsx
-'use client';
-
-import { useState, useEffect } from 'react';
-import { createBrowserClient } from '@gftdcojp/gftd-orm/browser';
-
-const client = createBrowserClient({
-  url: process.env.NEXT_PUBLIC_GFTD_URL!,
-  key: process.env.NEXT_PUBLIC_GFTD_ANON_KEY!, // Public API key only
-  database: {
-    ksql: {
-      url: process.env.NEXT_PUBLIC_GFTD_DB_URL!,
-      apiKey: process.env.NEXT_PUBLIC_GFTD_DB_API_KEY, // Public API key only
-      // apiSecret is not available (security)
-    },
-    schemaRegistry: {
-      url: process.env.NEXT_PUBLIC_GFTD_SCHEMA_REGISTRY_URL!,
-      apiKey: process.env.NEXT_PUBLIC_GFTD_SCHEMA_REGISTRY_API_KEY, // Public API key only
-    },
-  },
-  realtime: {
-    url: process.env.NEXT_PUBLIC_GFTD_REALTIME_URL!,
-    apiKey: process.env.NEXT_PUBLIC_GFTD_REALTIME_API_KEY, // Public API key only
-  },
-  // storage, auth are limited (URL only)
-});
-
-export default function RealtimeDashboard() {
-  const [isConnected, setIsConnected] = useState(false);
-  const [users, setUsers] = useState([]);
-
-  useEffect(() => {
-    const initialize = async () => {
-      await client.initialize();
-      setIsConnected(true);
-
-      // Real-time monitoring
-      const channel = client.channel('user-updates');
-      channel.onTable('users', 'INSERT', (payload) => {
-        console.log('New user:', payload);
-        setUsers(prev => [...prev, payload.new]);
-      });
-      await channel.connect();
-    };
-
-    initialize();
-  }, []);
-
-  return (
-    <div>
-      <p>Connection Status: {isConnected ? 'Connected' : 'Disconnected'}</p>
-      <p>User Count: {users.length}</p>
-    </div>
-  );
-}
-```
-
-### Usage in API Routes
-
-```typescript
-// app/api/users/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@gftdcojp/gftd-orm/server';
-
-export async function GET() {
-  const client = createServerClient({
-    url: process.env.GFTD_URL!,
-    key: process.env.GFTD_SERVICE_ROLE_KEY!, // Safe on server only
-    database: {
-      ksql: {
-        url: process.env.GFTD_DB_URL!,
-        apiKey: process.env.GFTD_DB_API_KEY,
-        apiSecret: process.env.GFTD_DB_API_SECRET, // Safe on server only
-      },
-      schemaRegistry: {
-        url: process.env.GFTD_SCHEMA_REGISTRY_URL!,
-        auth: { 
-          user: process.env.GFTD_SCHEMA_REGISTRY_AUTH_USER!, // Safe on server only
-          pass: process.env.GFTD_SCHEMA_REGISTRY_AUTH_PASSWORD! // Safe on server only
-        },
-      },
-    },
-  });
-
-  await client.initialize();
-  const { data } = await client.from('users').select('*').execute();
-  
-  return NextResponse.json({ data });
-}
-```
-
-### React Hooks
-
-```typescript
-// 利用可能な React Hooks
-import { useBrowserClient, useRealtimeSubscription } from '@gftdcojp/gftd-orm/hooks';
-
-function UserList() {
-  const { client, isConnected } = useBrowserClient({
-    url: process.env.NEXT_PUBLIC_GFTD_URL!,
-    key: process.env.NEXT_PUBLIC_GFTD_ANON_KEY!,
-    database: {
-      ksql: { url: process.env.NEXT_PUBLIC_GFTD_DB_URL! },
-      schemaRegistry: { url: process.env.NEXT_PUBLIC_GFTD_SCHEMA_REGISTRY_URL! },
-    },
-  });
-
-  // Real-time monitoring
-  useRealtimeSubscription(client, 'users', 'INSERT', (payload) => {
-    console.log('New user:', payload);
-  });
-
-  return (
-    <div>
-      <p>Connection Status: {isConnected ? 'Connected' : 'Disconnected'}</p>
-    </div>
-  );
-}
-```
-
-### Environment Variables Configuration
-
-```bash
-# .env.local (Next.js project)
-
-# 🔒 Server-only (Sensitive information)
-GFTD_URL=http://localhost:8088
-GFTD_SERVICE_ROLE_KEY=your-service-role-key       # ⚠️ Sensitive
-GFTD_JWT_SECRET=your-super-secret-jwt-key         # ⚠️ Sensitive
-
-# Database (ksqlDB)
-GFTD_DB_URL=http://localhost:8088
-GFTD_DB_API_KEY=your-api-key
-GFTD_DB_API_SECRET=your-secret-key                # ⚠️ Sensitive
-
-# Schema Registry
-GFTD_SCHEMA_REGISTRY_URL=http://localhost:8081
-GFTD_SCHEMA_REGISTRY_AUTH_USER=admin              # ⚠️ Sensitive
-GFTD_SCHEMA_REGISTRY_AUTH_PASSWORD=admin          # ⚠️ Sensitive
-
-# Storage (S3 Compatible)
-GFTD_STORAGE_ENDPOINT=http://localhost:9000
-GFTD_STORAGE_ACCESS_KEY=minioadmin                # ⚠️ Sensitive
-GFTD_STORAGE_SECRET_KEY=minioadmin                # ⚠️ Sensitive
-GFTD_STORAGE_BUCKET=uploads
-
-# Realtime
-GFTD_REALTIME_URL=ws://localhost:8088
-GFTD_REALTIME_API_KEY=your-realtime-api-key       # ⚠️ Sensitive
-
-# 🌍 Client public (NEXT_PUBLIC_ prefix)
-NEXT_PUBLIC_GFTD_URL=http://localhost:8088
-NEXT_PUBLIC_GFTD_ANON_KEY=your-anon-key           # 📢 Public key
-
-# Database (ksqlDB) - Client
-NEXT_PUBLIC_GFTD_DB_URL=http://localhost:8088
-NEXT_PUBLIC_GFTD_DB_API_KEY=your-public-api-key   # 📢 Public key
-
-# Schema Registry - Client
-NEXT_PUBLIC_GFTD_SCHEMA_REGISTRY_URL=http://localhost:8081
-NEXT_PUBLIC_GFTD_SCHEMA_REGISTRY_API_KEY=your-public-schema-key  # 📢 Public key
-
-# Realtime - Client
-NEXT_PUBLIC_GFTD_REALTIME_URL=ws://localhost:8088
-NEXT_PUBLIC_GFTD_REALTIME_API_KEY=your-public-realtime-key      # 📢 Public key
-```
-
-**🔐 Critical Security Notes:**
-
-- `NEXT_PUBLIC_*` variables are sent to the browser, so only set **public API keys**
-- `GFTD_SERVICE_ROLE_KEY`, `GFTD_DB_API_SECRET`, `GFTD_SCHEMA_REGISTRY_AUTH_*`, `GFTD_STORAGE_*_KEY`, `GFTD_JWT_SECRET` should **NEVER** be prefixed with `NEXT_PUBLIC_*`
-- Browser clients are recommended for read-only operations; write operations should go through the server
 
 ## 🚀 Quick Start
 
-### 1. Client Creation and Initialization
+### 1. Client Creation and Configuration
 
 ```typescript
 import { createClient } from '@gftdcojp/gftd-orm';
@@ -319,8 +68,8 @@ const client = createClient({
   database: {
     ksql: {
       url: process.env.GFTD_DB_URL!,
-      apiKey: process.env.GFTD_DB_API_KEY!,
-      apiSecret: process.env.GFTD_DB_API_SECRET!,
+      apiKey: process.env.GFTD_DB_API_KEY,
+      apiSecret: process.env.GFTD_DB_API_SECRET,
     },
     schemaRegistry: {
       url: process.env.GFTD_SCHEMA_REGISTRY_URL!,
@@ -334,21 +83,8 @@ const client = createClient({
   // Realtime configuration (optional)
   realtime: {
     url: process.env.GFTD_REALTIME_URL!,
-    apiKey: process.env.GFTD_REALTIME_API_KEY!,
+    apiKey: process.env.GFTD_REALTIME_API_KEY,
     autoReconnect: true,
-  },
-  
-  // Storage configuration (optional)
-  storage: {
-    bucketName: process.env.GFTD_STORAGE_BUCKET!,
-    endpoint: process.env.GFTD_STORAGE_ENDPOINT!,
-    accessKeyId: process.env.GFTD_STORAGE_ACCESS_KEY!,
-    secretAccessKey: process.env.GFTD_STORAGE_SECRET_KEY!,
-  },
-  
-  // Auth configuration (optional)
-  auth: {
-    jwtSecret: process.env.GFTD_JWT_SECRET!,
   },
 });
 
@@ -356,155 +92,13 @@ const client = createClient({
 await client.initialize();
 ```
 
-### 2. Database Operations (Supabase-like)
+### 2. Schema Definition
 
 ```typescript
-// Data retrieval
-const { data, error } = await client
-  .from('users')
-  .select('*')
-  .eq('status', 'active')
-  .order('created', false)
-  .limit(10)
-  .execute();
+import { defineSchema, FieldType } from '@gftdcojp/gftd-orm';
 
-// Data insertion
-const { data: newUser } = await client
-  .from('users')
-  .insert({
-    name: 'John Doe',
-    email: 'john@example.com',
-    status: 'active',
-  });
-
-// Data update
-const { data: updatedUser } = await client
-  .from('users')
-  .eq('id', 'user-123')
-  .update({ status: 'premium' });
-
-// Data deletion
-const { data } = await client
-  .from('users')
-  .eq('id', 'user-123')
-  .delete();
-
-// Direct SQL execution
-const result = await client.sql('SELECT COUNT(*) FROM users_table');
-```
-
-### 3. Realtime Monitoring
-
-```typescript
-// Create channel
-const channel = client.channel('user-changes');
-
-// Table change monitoring
-channel.onTable('users', 'INSERT', (payload) => {
-  console.log('New user:', payload);
-});
-
-channel.onTable('users', 'UPDATE', (payload) => {
-  console.log('User updated:', payload);
-});
-
-// Stream monitoring
-channel.onStream('messages', (payload) => {
-  console.log('New message:', payload);
-});
-
-// Broadcast
-channel.onBroadcast('notifications', (payload) => {
-  console.log('Notification:', payload);
-});
-
-// Presence features
-channel.presence.track({ status: 'online' });
-channel.presence.onChange((payload) => {
-  console.log('Presence changed:', payload);
-});
-
-// Start connection
-await channel.connect();
-
-// Send message
-await channel.broadcast('notifications', {
-  type: 'user_joined',
-  user: 'john@example.com',
-});
-```
-
-### 4. Storage Operations
-
-```typescript
-// File upload
-const { data: file } = await client.storage.upload(
-  'avatars/user.jpg',
-  fileBuffer,
-  { contentType: 'image/jpeg' }
-);
-
-// File download
-const { data: fileData } = await client.storage.download('avatars/user.jpg');
-
-// File listing
-const { data: files } = await client.storage.list('avatars/');
-
-// Generate signed URL
-const { data: signedUrl } = client.storage.createSignedUrl('avatars/user.jpg', 3600);
-
-// Get public URL
-const { data: publicUrl } = client.storage.getPublicUrl('avatars/user.jpg');
-
-// Bucket management
-await client.storage.bucket.create('new-bucket', { public: false });
-const { data: buckets } = await client.storage.bucket.list();
-```
-
-### 5. Auth Authentication
-
-```typescript
-// User registration
-const { data: session } = await client.auth.signUp({
-  email: 'user@example.com',
-  password: 'password',
-  options: { data: { name: 'User Name' } },
-});
-
-// Login
-const { data: session } = await client.auth.signIn({
-  email: 'user@example.com',
-  password: 'password',
-});
-
-// OAuth login
-const { data: session } = await client.auth.signInWithOAuth('google');
-
-// Get current user
-const user = client.auth.getUser();
-
-// Update user information
-const { data: updatedUser } = await client.auth.updateUser({
-  user_metadata: { theme: 'dark' },
-});
-
-// Logout
-await client.auth.signOut();
-
-// Auth state monitoring
-const unsubscribe = client.auth.onAuthStateChange((event, session) => {
-  console.log('Auth state changed:', event, session);
-});
-```
-
-## 🔧 Schema & Model Definition (Legacy API)
-
-### Schema Definition
-
-```typescript
-import { defineSchema, FieldType } from 'gftd-orm';
-
-export const UserSchema = defineSchema('User', {
+// Define user schema
+const UserSchema = defineSchema('User', {
   id:       FieldType.UUID.primaryKey(),
   tenantId: FieldType.UUID.notNull(),
   name:     FieldType.STRING.notNull(),
@@ -513,66 +107,180 @@ export const UserSchema = defineSchema('User', {
 });
 ```
 
-### Model Definition
+### 3. ksqlDB Client Usage
 
 ```typescript
-import { defineModel, StreamType } from 'gftd-orm';
+import { KsqlDbClient } from '@gftdcojp/gftd-orm';
 
-export const User = defineModel({
-  schema: UserSchema,
-  type:   StreamType.TABLE,
-  topic:  'users',
-  key:    'id',
+const ksqlClient = new KsqlDbClient({
+  url: 'http://localhost:8088',
+  apiKey: 'your-api-key',
+  apiSecret: 'your-api-secret',
+});
+
+// Execute ksqlDB queries
+const result = await ksqlClient.query('SHOW STREAMS;');
+
+// Create stream
+await ksqlClient.createStream({
+  name: 'user_events',
+  columns: {
+    id: 'VARCHAR',
+    event_type: 'VARCHAR',
+    user_id: 'VARCHAR',
+    timestamp: 'BIGINT'
+  },
+  topic: 'user-events',
+  valueFormat: 'JSON'
 });
 ```
 
-### RLS Policy Definition
+### 4. Schema Registry Integration
 
 ```typescript
-import { definePolicy } from 'gftd-orm';
+import { SchemaRegistry } from '@gftdcojp/gftd-orm';
 
-definePolicy(UserSchema.name, (ctx) => {
-  return `tenantId = '${ctx.tenantId}'`;
+const schemaRegistry = new SchemaRegistry({
+  url: 'http://localhost:8081',
+  auth: { user: 'admin', pass: 'admin' }
 });
+
+// Register schema
+await schemaRegistry.registerSchema('user-value', {
+  type: 'record',
+  name: 'User',
+  fields: [
+    { name: 'id', type: 'string' },
+    { name: 'name', type: 'string' },
+    { name: 'email', type: 'string' }
+  ]
+});
+
+// Get schema
+const schema = await schemaRegistry.getSchema('user-value', 'latest');
+```
+
+### 5. Realtime Monitoring
+
+```typescript
+// Create realtime channel
+const channel = client.channel('user-changes');
+
+// Monitor table changes
+channel.onTable('users', 'INSERT', (payload) => {
+  console.log('New user:', payload);
+});
+
+// Monitor stream events
+channel.onStream('user_events', (payload) => {
+  console.log('User event:', payload);
+});
+
+// Broadcast messages
+await channel.broadcast('notifications', {
+  type: 'user_joined',
+  user: 'john@example.com',
+});
+
+// Connect to channel
+await channel.connect();
+```
+
+### 6. Audit Logging
+
+```typescript
+import { AuditLogManager } from '@gftdcojp/gftd-orm';
+
+// Log authentication events
+AuditLogManager.logAuthSuccess('user-123', 'tenant-001', 'session-456', '192.168.1.1');
+
+// Log data access
+AuditLogManager.logDataAccess('user-123', 'tenant-001', 'read', 'users_table', true);
+
+// Log security violations
+AuditLogManager.logSecurityViolation('user-123', 'tenant-001', 'INVALID_TOKEN', {
+  token: 'invalid-jwt-token',
+  endpoint: '/api/users'
+});
+
+// Search logs
+const logs = await AuditLogManager.searchLogs({
+  userId: 'user-123',
+  startDate: new Date('2024-01-01'),
+  limit: 100
+});
+```
+
+### 7. Rate Limiting
+
+```typescript
+import { RateLimitManager } from '@gftdcojp/gftd-orm';
+
+// Check rate limit
+const rateLimiter = RateLimitManager.getInstance({
+  windowMs: 60000,  // 1 minute
+  maxRequests: 100   // 100 requests per minute
+});
+
+const result = rateLimiter.checkLimit('user-123');
+if (!result.allowed) {
+  console.log('Rate limit exceeded');
+  console.log('Reset time:', new Date(result.resetTime));
+}
+```
+
+## 🔧 Configuration
+
+### Environment Variables
+
+```bash
+# Core Configuration
+GFTD_URL=http://localhost:8088
+GFTD_SERVICE_ROLE_KEY=your-service-role-key
+
+# Database (ksqlDB)
+GFTD_DB_URL=http://localhost:8088
+GFTD_DB_API_KEY=your-api-key
+GFTD_DB_API_SECRET=your-secret-key
+
+# Schema Registry
+GFTD_SCHEMA_REGISTRY_URL=http://localhost:8081
+GFTD_SCHEMA_REGISTRY_AUTH_USER=admin
+GFTD_SCHEMA_REGISTRY_AUTH_PASSWORD=admin
+
+# Realtime
+GFTD_REALTIME_URL=ws://localhost:8088
+GFTD_REALTIME_API_KEY=your-realtime-api-key
+
+# Audit Logging
+GFTD_AUDIT_ENABLED=true
+GFTD_AUDIT_LOG_FILE=./logs/audit.log
+
+# Rate Limiting
+GFTD_RATE_LIMIT_WINDOW_MS=60000
+GFTD_RATE_LIMIT_MAX_REQUESTS=100
 ```
 
 ## 📋 Available Commands
 
 ```bash
-# Install dependencies
-pnpm install
-
-# Development (watch mode)
-pnpm dev
-
 # Build
 pnpm build
 
-# Run tests
-pnpm test                  # Fast test execution with Vitest
-pnpm test:watch           # Test execution in watch mode
-pnpm test:coverage        # Test execution with coverage
-pnpm test:ui              # Test execution with Vitest UI
-pnpm test:benchmark       # Benchmark test execution
+# Development
+pnpm dev
 
-# Run demos
-pnpm demo                 # Mock demo
-pnpm demo:real            # Real service connection demo
-pnpm demo:gftd            # New integrated demo
-pnpm demo:mv              # Materialized View demo
+# Testing
+pnpm test
+pnpm test:watch
+pnpm test:coverage
 
-# Code quality
-pnpm lint                 # Code check with ESLint
-pnpm format               # Code formatting with Prettier
+# Code Quality
+pnpm lint
+pnpm format
 ```
 
-## 🎯 Implementation Examples
 
-See the detailed implementation examples:
-
-- [examples/gftd-orm-demo.ts](examples/gftd-orm-demo.ts) - Integrated demo (all features)
-- [examples/mock-demo.ts](examples/mock-demo.ts) - Mock demo
-- [examples/demo.ts](examples/demo.ts) - Legacy API
 
 ## 📚 Documentation
 
@@ -585,126 +293,43 @@ See the detailed implementation examples:
 const health = await client.health();
 console.log(health);
 // {
-//   database: { status: 'ok', details: {...} },
-//   realtime: { status: 'ok', details: {...} },
-//   storage: { status: 'ok' },
-//   auth: { status: 'ok' }
+//   status: 'ok',
+//   version: '25.07.4',
+//   features: ['basic', 'minimal']
 // }
 ```
 
-## 🔧 Configuration Options
 
-### Database Configuration
 
-```typescript
-database: {
-  ksql: {
-    url: 'http://localhost:8088',
-    apiKey?: 'your-api-key',
-    apiSecret?: 'your-api-secret',
-    headers?: { 'Custom-Header': 'value' },
-  },
-  schemaRegistry: {
-    url: 'http://localhost:8081',
-    auth?: { user: 'admin', pass: 'admin' },
-    apiKey?: 'schema-registry-key',
-  },
-}
-```
-
-### Realtime Configuration
-
-```typescript
-realtime: {
-  url: 'ws://localhost:8088',
-  apiKey?: 'your-api-key',
-  autoReconnect?: true,
-  reconnectInterval?: 5000,
-  maxReconnectAttempts?: 10,
-}
-```
-
-### Storage Configuration
-
-```typescript
-storage: {
-  bucketName: 'my-bucket',
-  region?: 'us-east-1',
-  endpoint?: 'http://localhost:9000',
-  accessKeyId?: 'access-key',
-  secretAccessKey?: 'secret-key',
-  publicUrl?: 'https://cdn.example.com',
-}
-```
-
-### Auth Configuration
-
-```typescript
-auth: {
-  jwtSecret: 'your-jwt-secret',
-  jwtExpiresIn?: '1h',
-  allowAnonymous?: false,
-  providers?: {
-    google: {
-      clientId: 'google-client-id',
-      clientSecret: 'google-client-secret',
-    },
-    github: {
-      clientId: 'github-client-id',
-      clientSecret: 'github-client-secret',
-    },
-    email: {
-      enabled: true,
-      requireConfirmation?: false,
-    },
-  },
-}
-```
-
-## 🔧 Development & CI/CD
+## 🛠️ Development & CI/CD
 
 ### Testing Environment
 - **Vitest**: Fast and lightweight test runner
 - **Coverage**: Detailed coverage reports with v8 provider
-- **UI Testing**: Browser-based test UI
-- **Benchmarks**: Automatic performance test execution
+- **TypeScript**: Strict type checking
 
 ### CI/CD Pipeline
 - **Automated Testing**: Matrix testing on Node.js 18.x, 20.x
-- **Security Scanning**: CodeQL, dependency audit, secret scanning
-- **Performance Monitoring**: Weekly benchmarks, memory leak tests
-- **Automated Deployment**: Automatic publishing to GitHub Packages
-- **Dependency Updates**: Weekly updates with Dependabot
+- **Code Quality**: ESLint + Prettier
+- **Automated Deployment**: Automatic publishing to npm
 
-### Quality Assurance
-- **Type Safety**: TypeScript strict mode
-- **Code Style**: ESLint + Prettier
-- **Security**: SQL injection prevention, input validation
-- **Monitoring**: Performance monitoring with alerts
-
-See [DEVELOPMENT.md](DEVELOPMENT.md) for details.
+See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed development setup.
 
 ## 🚧 Roadmap
 
 ### ✅ Completed
-- [x] **Security Enhancement** - Comprehensive enterprise security features
-- [x] **Audit Log System** - Detailed recording of security events
-- [x] **Rate Limiting** - DDoS attack prevention and access control
-- [x] **Encryption Features** - Password hashing and JWT signature verification
-- [x] **React Hooks** - useBrowserClient, useRealtimeSubscription and data management hooks
-- [x] **Docker Compose setup** - Full development environment setup
+- [x] **ksqlDB Integration** - Complete integration with ksqlDB
+- [x] **Schema Registry** - Confluent Schema Registry support
+- [x] **Realtime Features** - WebSocket-based real-time updates
+- [x] **Audit Logging** - Comprehensive activity logging
+- [x] **Rate Limiting** - Request throttling and rate limiting
+- [x] **TypeScript Support** - Full TypeScript definitions
 
-### 🔄 In Development
-- [ ] GraphQL API support
-- [ ] Edge Functions support
-- [ ] Analytics & Monitoring
-- [ ] CLI tools
-
-### 📋 Planned
-- [ ] Vue.js hooks
-- [ ] AWS/GCP deployment guide
-- [ ] Performance optimization
-- [ ] Internationalization (i18n)
+### 🔄 Planned
+- [ ] **Enhanced Query Builder** - Advanced ksqlDB query construction
+- [ ] **Stream Processing Utilities** - Higher-level stream processing abstractions
+- [ ] **Monitoring Dashboard** - Real-time monitoring interface
+- [ ] **Performance Optimization** - Query and connection optimization
 
 ## 📝 License
 
@@ -734,4 +359,4 @@ Pull requests and issues are welcome.
 
 ---
 
-With GFTD ORM, you can build **Kafka-based real-time data platforms** with a **Supabase-like developer experience**. 🚀
+With GFTD ORM, you can build **ksqlDB-based real-time data platforms** with **enterprise-grade TypeScript support**. 🚀
