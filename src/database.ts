@@ -62,11 +62,11 @@ export class Database {
   }
 
   /**
-   * SQL文を直接実行
+   * SQL文を直接実行（自動でエンドポイントを選択）
    */
   async sql(query: string, params?: any[]): Promise<any> {
-    const { executeQuery } = await import('./ksqldb-client');
-    return executeQuery(query);
+    const { executeAnyQuery } = await import('./ksqldb-client');
+    return executeAnyQuery(query);
   }
 
   /**
@@ -185,7 +185,7 @@ export class DatabaseQueryBuilder<T = any> {
   async execute(): Promise<{ data: T[]; error?: any }> {
     try {
       const { buildSelectQuery } = await import('./query-builder');
-      const { executeQuery } = await import('./ksqldb-client');
+      const { executePullQuery } = await import('./ksqldb-client');
 
       const query = buildSelectQuery(
         this.tableName,
@@ -196,10 +196,10 @@ export class DatabaseQueryBuilder<T = any> {
         this.offsetValue
       );
 
-      const result = await executeQuery(query);
+      const result = await executePullQuery(query);
       
-      // 結果をパース（実際の実装では適切にパース）
-      const data = result?.rows || [];
+      // ksqlDBの /query-stream レスポンスを解析
+      const data = result?.data || [];
       
       return { data };
     } catch (error) {
@@ -266,6 +266,44 @@ export class DatabaseQueryBuilder<T = any> {
       return { data: { deleted: true } };
     } catch (error) {
       return { data: null, error };
+    }
+  }
+
+  /**
+   * リアルタイムデータをストリーミング（ksqlDB固有機能）
+   */
+  async stream(
+    onData: (data: T) => void,
+    onError?: (error: Error) => void,
+    onComplete?: () => void
+  ): Promise<{ terminate: () => void }> {
+    try {
+      const { buildSelectQuery } = await import('./query-builder');
+      const { executePushQuery } = await import('./ksqldb-client');
+
+      // EMIT CHANGES を追加してプッシュクエリにする
+      const query = buildSelectQuery(
+        this.tableName,
+        this.selectFields,
+        this.whereConditions,
+        this.orderByConditions,
+        this.limitValue,
+        this.offsetValue
+      ) + ' EMIT CHANGES';
+
+      return executePushQuery(
+        query,
+        (streamData) => {
+          onData(streamData.row);
+        },
+        onError,
+        onComplete
+      );
+    } catch (error) {
+      if (onError) {
+        onError(error as Error);
+      }
+      return { terminate: () => {} };
     }
   }
 }

@@ -20,6 +20,7 @@ help:
 	@echo "  demo-gftd - Run GFTD unified demo"
 	@echo "  demo-mv   - Run Materialized View demo"
 	@echo "  simple    - Run simple Confluent connectivity test"
+	@echo "  websocket - Run WebSocket/Streaming functionality test"
 	@echo ""
 	@echo "Cleanup:"
 	@echo "  clean     - Stop services and remove volumes"
@@ -108,6 +109,11 @@ simple:
 	@echo "🧪 Running simple Confluent connectivity test..."
 	@export GFTD_JWT_SECRET="gftd-orm-super-secret-jwt-key-minimum-32-characters-long-for-security-testing" && \
 	pnpm exec ts-node examples/simple-confluent-test.ts
+
+websocket:
+	@echo "🔄 Running WebSocket/Streaming test..."
+	@export GFTD_JWT_SECRET="gftd-orm-super-secret-jwt-key-minimum-32-characters-long-for-security-testing" && \
+	pnpm exec ts-node examples/websocket-test.ts
 
 # Cleanup
 clean:

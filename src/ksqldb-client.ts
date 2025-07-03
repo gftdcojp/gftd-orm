@@ -33,7 +33,8 @@ export function initializeKsqlDbClient(ksqlConfig: KsqlDbConfig): void {
 }
 
 /**
- * クエリを実行
+ * DDL/DML文を実行（CREATE, INSERT, UPDATE, DELETE, DROP など）
+ * /ksql エンドポイントを使用
  */
 export async function executeQuery(sql: string): Promise<any> {
   if (!ksqlClient) {
@@ -56,7 +57,8 @@ export async function executeQuery(sql: string): Promise<any> {
 }
 
 /**
- * Pull Query を実行（リアルタイムクエリ用）
+ * Pull Query を実行（一度だけ結果を取得するSELECT文）
+ * /query-stream エンドポイントを使用
  */
 export async function executePullQuery(sql: string): Promise<any> {
   if (!ksqlClient) {
@@ -67,7 +69,34 @@ export async function executePullQuery(sql: string): Promise<any> {
     const response = await ksqlClient.post('/query-stream', {
       sql,
       properties: {},
+    }, {
+      headers: {
+        'Content-Type': 'application/vnd.ksql.v1+json',
+        'Accept': 'application/vnd.ksqlapi.delimited.v1',
+      },
     });
+
+    // レスポンスを解析
+    if (typeof response.data === 'string') {
+      const lines = response.data.split('\n').filter((line: string) => line.trim());
+      const results = [];
+      let header = null;
+
+      for (const line of lines) {
+        try {
+          const parsed = JSON.parse(line);
+          if (!header && parsed.columnNames) {
+            header = parsed;
+          } else if (Array.isArray(parsed)) {
+            results.push(parsed);
+          }
+        } catch (parseError) {
+          // 無効なJSONをスキップ
+        }
+      }
+
+      return { header, data: results };
+    }
 
     return response.data;
   } catch (error: any) {
@@ -79,16 +108,21 @@ export async function executePullQuery(sql: string): Promise<any> {
 }
 
 /**
- * Push Query を実行（ストリーミングクエリ用）
+ * Push Query を実行（継続的にデータを受信するSELECT文）
+ * /query-stream エンドポイントでストリーミング
  */
 export async function executePushQuery(
   sql: string,
   onData: (data: any) => void,
-  onError?: (error: Error) => void
-): Promise<void> {
+  onError?: (error: Error) => void,
+  onComplete?: () => void
+): Promise<{ terminate: () => void }> {
   if (!ksqlClient) {
     throw new Error('ksqlDB client is not initialized. Call initializeKsqlDbClient() first.');
   }
+
+  let queryId: string | null = null;
+  let terminated = false;
 
   try {
     const response = await ksqlClient.post('/query-stream', {
@@ -96,27 +130,68 @@ export async function executePushQuery(
       properties: {},
     }, {
       responseType: 'stream',
+      headers: {
+        'Content-Type': 'application/vnd.ksql.v1+json',
+        'Accept': 'application/vnd.ksqlapi.delimited.v1',
+      },
     });
 
+    let header: any = null;
+
     response.data.on('data', (chunk: Buffer) => {
+      if (terminated) return;
+
       try {
         const lines = chunk.toString().split('\n').filter((line: string) => line.trim());
+        
         for (const line of lines) {
           const data = JSON.parse(line);
-          onData(data);
+          
+          // ヘッダー情報を保存
+          if (!header && data.columnNames) {
+            header = data;
+            queryId = data.queryId;
+          } else if (Array.isArray(data)) {
+            // データ行を処理
+            onData({ header, row: data });
+          }
         }
       } catch (parseError) {
-        if (onError) {
+        if (onError && !terminated) {
           onError(new Error(`Failed to parse streaming data: ${parseError}`));
         }
       }
     });
 
     response.data.on('error', (error: Error) => {
-      if (onError) {
+      if (onError && !terminated) {
         onError(error);
       }
     });
+
+    response.data.on('end', () => {
+      if (onComplete && !terminated) {
+        onComplete();
+      }
+    });
+
+    // クエリ終了関数を返す
+    return {
+      terminate: async () => {
+        if (terminated) return;
+        terminated = true;
+
+        if (queryId) {
+          try {
+            await ksqlClient!.post('/close-query', {
+              queryId,
+            });
+          } catch (error) {
+            console.warn('Failed to terminate query:', error);
+          }
+        }
+      }
+    };
 
   } catch (error: any) {
     if (axios.isAxiosError(error)) {
@@ -133,6 +208,55 @@ export async function executePushQuery(
         throw error;
       }
     }
+
+    return { terminate: () => {} };
+  }
+}
+
+/**
+ * SELECT文かどうかを判定
+ */
+function isSelectStatement(sql: string): boolean {
+  const trimmed = sql.trim().toUpperCase();
+  return trimmed.startsWith('SELECT') || trimmed.startsWith('PRINT');
+}
+
+/**
+ * 汎用クエリ実行（自動でエンドポイントを選択）
+ */
+export async function executeAnyQuery(sql: string): Promise<any> {
+  const trimmed = sql.trim().toUpperCase();
+  
+  // SELECT文の場合は /query-stream を使用
+  if (isSelectStatement(sql)) {
+    // EMIT CHANGES が含まれている場合はプッシュクエリ
+    if (trimmed.includes('EMIT CHANGES')) {
+      return new Promise((resolve, reject) => {
+        const results: any[] = [];
+        let header: any = null;
+
+        executePushQuery(
+          sql,
+          (data) => {
+            if (!header) header = data.header;
+            results.push(data.row);
+          },
+          reject,
+          () => resolve({ header, data: results })
+        );
+
+        // 5秒後に自動終了（デモ用）
+        setTimeout(() => {
+          resolve({ header, data: results });
+        }, 5000);
+      });
+    } else {
+      // プルクエリ
+      return executePullQuery(sql);
+    }
+  } else {
+    // DDL/DML文の場合は /ksql を使用
+    return executeQuery(sql);
   }
 }
 
