@@ -46,12 +46,6 @@ export interface GftdOrmConfig {
   // Realtime 設定
   realtime?: RealtimeConfig;
   
-  // Storage 設定  
-  storage?: StorageConfig;
-  
-  // Auth 設定
-  auth?: AuthConfig;
-  
   // 全般設定
   global?: {
     headers?: Record<string, string>;
@@ -113,8 +107,6 @@ export function createConfigFromEnv(): GftdOrmConfig {
 export class GftdOrmClient {
   public database: Database;
   public realtime?: Realtime;
-  public storage?: Storage;
-  public auth?: Auth;
 
   constructor(private config: GftdOrmConfig) {
     // Database は必須
@@ -126,14 +118,6 @@ export class GftdOrmClient {
     // オプションのモジュール
     if (config.realtime) {
       this.realtime = createRealtime(config.realtime);
-    }
-
-    if (config.storage) {
-      this.storage = createStorage(config.storage);
-    }
-
-    if (config.auth) {
-      this.auth = createAuth(config.auth);
     }
   }
 
