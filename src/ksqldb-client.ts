@@ -65,6 +65,9 @@ export async function executePullQuery(sql: string): Promise<any> {
     throw new Error('ksqlDB client is not initialized. Call initializeKsqlDbClient() first.');
   }
 
+  console.log(`[DEBUG] executePullQuery - SQL: ${sql}`);
+  console.log(`[DEBUG] executePullQuery - Config:`, config);
+
   try {
     const response = await ksqlClient.post('/query-stream', {
       sql,
@@ -76,33 +79,83 @@ export async function executePullQuery(sql: string): Promise<any> {
       },
     });
 
+    console.log(`[DEBUG] executePullQuery - Response status: ${response.status}`);
+    console.log(`[DEBUG] executePullQuery - Response headers:`, response.headers);
+
     // レスポンスを解析
     if (typeof response.data === 'string') {
       const lines = response.data.split('\n').filter((line: string) => line.trim());
       const results = [];
       let header = null;
 
+      console.log(`[DEBUG] executePullQuery - Response lines count: ${lines.length}`);
+
       for (const line of lines) {
         try {
           const parsed = JSON.parse(line);
           if (!header && parsed.columnNames) {
             header = parsed;
+            console.log(`[DEBUG] executePullQuery - Header:`, header);
           } else if (Array.isArray(parsed)) {
             results.push(parsed);
           }
         } catch (parseError) {
-          // 無効なJSONをスキップ
+          console.warn(`[WARN] executePullQuery - Failed to parse line: ${line}`, parseError);
         }
       }
 
+      console.log(`[DEBUG] executePullQuery - Results count: ${results.length}`);
       return { header, data: results };
     }
 
+    console.log(`[DEBUG] executePullQuery - Raw response data:`, response.data);
     return response.data;
   } catch (error: any) {
+    console.error(`[ERROR] executePullQuery failed:`, error);
+    
     if (axios.isAxiosError(error)) {
-      throw new Error(`ksqlDB pull query failed: ${error.response?.data?.message || error.message}`);
+      const errorDetails = {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.response?.headers,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          headers: error.config?.headers,
+        },
+        sql: sql,
+        ksqlDbConfig: config,
+      };
+      
+      console.error(`[ERROR] executePullQuery - Axios error details:`, errorDetails);
+      
+      let errorMessage = 'Unknown error';
+      
+      if (error.response?.data) {
+        if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        } else if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.response.data.error_code) {
+          errorMessage = `${error.response.data.error_code}: ${error.response.data.message || 'Unknown error'}`;
+        } else {
+          errorMessage = JSON.stringify(error.response.data);
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      // ストリーム vs テーブルの問題を特定しやすくする
+      if (errorMessage.includes('stream') || errorMessage.includes('table')) {
+        console.error(`[ERROR] executePullQuery - Possible stream/table issue. SQL: ${sql}`);
+        console.error(`[ERROR] executePullQuery - Remember: Pull queries work only on TABLES, not STREAMS`);
+      }
+      
+      throw new Error(`ksqlDB pull query failed (${error.response?.status || 'unknown'}): ${errorMessage}`);
     }
+    
+    console.error(`[ERROR] executePullQuery - Non-axios error:`, error);
     throw error;
   }
 }

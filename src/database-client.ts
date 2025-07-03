@@ -162,15 +162,48 @@ export class DatabaseClientQueryBuilder<T = any> {
    */
   async execute(): Promise<{ data: T[]; error?: any }> {
     try {
-      const query = this.buildSelectQuery();
-      const result = await this.ksqlClient.executeQuery(query);
+      // データ取得はテーブルに対してプルクエリを実行
+      // テーブル名に_streamが含まれている場合は_tableに変換
+      const tableNameForQuery = this.tableName.endsWith('_stream') 
+        ? this.tableName.replace('_stream', '_table')
+        : this.tableName.endsWith('_table') 
+        ? this.tableName
+        : `${this.tableName}_table`;
+
+      const query = this.buildSelectQuery(tableNameForQuery);
+      
+      console.log(`[DEBUG] DatabaseClientQueryBuilder.execute - Table: ${tableNameForQuery}`);
+      console.log(`[DEBUG] DatabaseClientQueryBuilder.execute - Query: ${query}`);
+
+      const result = await this.ksqlClient.executePullQuery(query);
       
       // 結果をパース（実際の実装では適切にパース）
-      const data = result?.rows || [];
+      const data = result?.data || result?.rows || [];
+      
+      console.log(`[DEBUG] DatabaseClientQueryBuilder.execute - Result:`, result);
+      console.log(`[DEBUG] DatabaseClientQueryBuilder.execute - Data count: ${data.length}`);
       
       return { data };
-    } catch (error) {
-      return { data: [], error };
+    } catch (error: any) {
+      console.error(`[ERROR] DatabaseClientQueryBuilder.execute failed:`, error);
+      console.error(`[ERROR] Table name: ${this.tableName}`);
+      console.error(`[ERROR] Query details:`, {
+        selectFields: this.selectFields,
+        whereConditions: this.whereConditions,
+        orderByConditions: this.orderByConditions,
+        limitValue: this.limitValue,
+        offsetValue: this.offsetValue
+      });
+      
+      return { 
+        data: [], 
+        error: {
+          message: error.message || 'Unknown error',
+          details: error,
+          tableName: this.tableName,
+          queryType: 'client_pull_query'
+        }
+      };
     }
   }
 
@@ -227,45 +260,75 @@ export class DatabaseClientQueryBuilder<T = any> {
     }
   }
 
-  private buildSelectQuery(): string {
-    let query = `SELECT ${this.selectFields.join(', ')} FROM ${this.tableName}`;
-    
-    if (Object.keys(this.whereConditions).length > 0) {
-      const whereClause = Object.entries(this.whereConditions)
-        .map(([key, value]) => {
-          if (typeof value === 'object' && value !== null) {
-            const obj = value as any;
-            if (obj.like) return `${key} LIKE '${obj.like}'`;
-            if (obj.gte) return `${key} >= ${obj.gte}`;
-            if (obj.lte) return `${key} <= ${obj.lte}`;
-            if (obj.gt) return `${key} > ${obj.gt}`;
-            if (obj.lt) return `${key} < ${obj.lt}`;
-            if (obj.in) return `${key} IN (${obj.in.map((v: any) => `'${v}'`).join(', ')})`;
+  private buildSelectQuery(tableName?: string): string {
+    const targetTable = tableName || this.tableName;
+    let query = `SELECT ${this.selectFields.join(', ')} FROM ${targetTable}`;
+
+    // WHERE条件を追加
+    const whereConditions = [];
+    for (const [key, value] of Object.entries(this.whereConditions)) {
+      if (typeof value === 'object' && value !== null) {
+        // 複雑な条件の場合
+        for (const [operator, operatorValue] of Object.entries(value)) {
+          if (operator === 'gte') {
+            whereConditions.push(`${key} >= ${this.formatValue(operatorValue)}`);
+          } else if (operator === 'lte') {
+            whereConditions.push(`${key} <= ${this.formatValue(operatorValue)}`);
+          } else if (operator === 'gt') {
+            whereConditions.push(`${key} > ${this.formatValue(operatorValue)}`);
+          } else if (operator === 'lt') {
+            whereConditions.push(`${key} < ${this.formatValue(operatorValue)}`);
+          } else if (operator === 'like') {
+            whereConditions.push(`${key} LIKE ${this.formatValue(operatorValue)}`);
+          } else if (operator === 'in') {
+            const values = Array.isArray(operatorValue) ? operatorValue : [operatorValue];
+            const formattedValues = values.map(v => this.formatValue(v)).join(', ');
+            whereConditions.push(`${key} IN (${formattedValues})`);
           }
-          return `${key} = '${value}'`;
-        })
-        .join(' AND ');
-      
-      query += ` WHERE ${whereClause}`;
+        }
+      } else {
+        whereConditions.push(`${key} = ${this.formatValue(value)}`);
+      }
     }
-    
-    if (Object.keys(this.orderByConditions).length > 0) {
-      const orderClause = Object.entries(this.orderByConditions)
-        .map(([key, direction]) => `${key} ${direction}`)
-        .join(', ');
-      
-      query += ` ORDER BY ${orderClause}`;
+
+    if (whereConditions.length > 0) {
+      query += ` WHERE ${whereConditions.join(' AND ')}`;
     }
-    
-    if (this.limitValue) {
+
+    // ORDER BY条件を追加
+    const orderByConditions = [];
+    for (const [key, direction] of Object.entries(this.orderByConditions)) {
+      const dir = typeof direction === 'string' ? direction.toUpperCase() : 'ASC';
+      orderByConditions.push(`${key} ${dir}`);
+    }
+
+    if (orderByConditions.length > 0) {
+      query += ` ORDER BY ${orderByConditions.join(', ')}`;
+    }
+
+    // LIMIT条件を追加
+    if (this.limitValue !== undefined) {
       query += ` LIMIT ${this.limitValue}`;
     }
-    
-    if (this.offsetValue) {
+
+    // OFFSET条件を追加
+    if (this.offsetValue !== undefined) {
       query += ` OFFSET ${this.offsetValue}`;
     }
-    
-    return query;
+
+    return query + ';';
+  }
+
+  private formatValue(value: any): string {
+    if (typeof value === 'string') {
+      return `'${value.replace(/'/g, "''")}'`;
+    } else if (typeof value === 'number' || typeof value === 'boolean') {
+      return value.toString();
+    } else if (value === null) {
+      return 'NULL';
+    } else {
+      return `'${String(value).replace(/'/g, "''")}'`;
+    }
   }
 
   private buildInsertQuery(values: Partial<T>): string {

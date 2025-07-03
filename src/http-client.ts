@@ -196,11 +196,23 @@ export class KsqlDbClientBrowser {
    * Pull Query を実行
    */
   async executePullQuery(sql: string): Promise<any> {
+    console.log(`[DEBUG] KsqlDbClientBrowser.executePullQuery - SQL: ${sql}`);
+    console.log(`[DEBUG] KsqlDbClientBrowser.executePullQuery - Config:`, this.config);
+    
     try {
       const response = await this.httpClient.executePullQuery(sql);
+      console.log(`[DEBUG] KsqlDbClientBrowser.executePullQuery - Response:`, response);
       return response;
     } catch (error: any) {
-      throw new Error(`ksqlDB pull query failed: ${error.message}`);
+      console.error(`[ERROR] KsqlDbClientBrowser.executePullQuery failed:`, error);
+      
+      // ストリーム vs テーブルの問題を特定しやすくする
+      if (error.message && (error.message.includes('stream') || error.message.includes('table'))) {
+        console.error(`[ERROR] KsqlDbClientBrowser.executePullQuery - Possible stream/table issue. SQL: ${sql}`);
+        console.error(`[ERROR] KsqlDbClientBrowser.executePullQuery - Remember: Pull queries work only on TABLES, not STREAMS`);
+      }
+      
+      throw new Error(`ksqlDB pull query failed: ${error.message || 'Unknown error'}`);
     }
   }
 

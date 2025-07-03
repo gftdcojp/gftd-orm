@@ -187,8 +187,16 @@ export class DatabaseQueryBuilder<T = any> {
       const { buildSelectQuery } = await import('./query-builder');
       const { executePullQuery } = await import('./ksqldb-client');
 
+      // データ取得はテーブルに対してプルクエリを実行
+      // テーブル名に_streamが含まれている場合は_tableに変換
+      const tableNameForQuery = this.tableName.endsWith('_stream') 
+        ? this.tableName.replace('_stream', '_table')
+        : this.tableName.endsWith('_table') 
+        ? this.tableName
+        : `${this.tableName}_table`;
+
       const query = buildSelectQuery(
-        this.tableName,
+        tableNameForQuery,
         this.selectFields,
         this.whereConditions,
         this.orderByConditions,
@@ -196,14 +204,35 @@ export class DatabaseQueryBuilder<T = any> {
         this.offsetValue
       );
 
+      console.log(`[DEBUG] Executing pull query on table: ${tableNameForQuery}`);
+      console.log(`[DEBUG] Query: ${query}`);
+
       const result = await executePullQuery(query);
       
       // ksqlDBの /query-stream レスポンスを解析
       const data = result?.data || [];
       
       return { data };
-    } catch (error) {
-      return { data: [], error };
+    } catch (error: any) {
+      console.error(`[ERROR] Pull query failed:`, error);
+      console.error(`[ERROR] Table name: ${this.tableName}`);
+      console.error(`[ERROR] Query details:`, {
+        selectFields: this.selectFields,
+        whereConditions: this.whereConditions,
+        orderByConditions: this.orderByConditions,
+        limitValue: this.limitValue,
+        offsetValue: this.offsetValue
+      });
+      
+      return { 
+        data: [], 
+        error: {
+          message: error.message || 'Unknown error',
+          details: error,
+          tableName: this.tableName,
+          queryType: 'pull_query'
+        }
+      };
     }
   }
 
@@ -226,12 +255,37 @@ export class DatabaseQueryBuilder<T = any> {
       const { buildInsertQuery } = await import('./query-builder');
       const { executeQuery } = await import('./ksqldb-client');
 
-      const query = buildInsertQuery(this.tableName, values);
+      // データ挿入はストリームに対して実行
+      // テーブル名に_tableが含まれている場合は_streamに変換
+      const streamNameForInsert = this.tableName.endsWith('_table') 
+        ? this.tableName.replace('_table', '_stream')
+        : this.tableName.endsWith('_stream') 
+        ? this.tableName
+        : `${this.tableName}_stream`;
+
+      const query = buildInsertQuery(streamNameForInsert, values);
+      
+      console.log(`[DEBUG] Executing insert query on stream: ${streamNameForInsert}`);
+      console.log(`[DEBUG] Query: ${query}`);
+
       await executeQuery(query);
       
       return { data: values as T };
-    } catch (error) {
-      return { data: null, error };
+    } catch (error: any) {
+      console.error(`[ERROR] Insert query failed:`, error);
+      console.error(`[ERROR] Stream name: ${this.tableName}`);
+      console.error(`[ERROR] Insert values:`, values);
+      
+      return { 
+        data: null, 
+        error: {
+          message: error.message || 'Unknown error',
+          details: error,
+          tableName: this.tableName,
+          queryType: 'insert',
+          values
+        }
+      };
     }
   }
 
