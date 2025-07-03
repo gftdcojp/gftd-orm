@@ -1,0 +1,56 @@
+{
+  "name": "gftd-orm",
+  "version": "0.1.0",
+  "description": "Enterprise-grade real-time data platform with ksqlDB, inspired by Supabase architecture",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "pnpm exec jest",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts",
+    "demo": "pnpm exec ts-node examples/mock-demo.ts",
+    "demo:real": "pnpm exec ts-node examples/demo.ts",
+    "demo:gftd": "pnpm exec ts-node examples/gftd-orm-demo.ts"
+  },
+  "keywords": [
+    "ksqldb",
+    "orm",
+    "kafka",
+    "confluent",
+    "typescript",
+    "drizzle",
+    "stream-processing",
+    "realtime",
+    "storage",
+    "auth",
+    "supabase",
+    "gftd"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "avsc": "^5.7.7",
+    "axios": "^1.6.0",
+    "uuid": "^9.0.1",
+    "ws": "^8.18.0",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.0.0",
+    "@types/uuid": "^9.0.7",
+    "@types/ws": "^8.5.0",
+    "@types/jsonwebtoken": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.0.0",
+    "prettier": "^3.0.0",
+    "ts-jest": "^29.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
+}

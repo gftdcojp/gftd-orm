@@ -1,0 +1,197 @@
+/**
+ * 実行コンテキスト管理 - JWT Claims 等からユーザー情報を取得しフィルタ
+ */
+
+import { ExecutionContext } from './types';
+
+/**
+ * 現在の実行コンテキストを取得
+ */
+export function getExecutionContext(): ExecutionContext | null {
+  // グローバル変数から取得（デモ用）
+  // 実際の実装では、AsyncLocalStorage や request-context などを使用
+  return (global as any).__currentExecutionContext || null;
+}
+
+/**
+ * 実行コンテキストを設定
+ */
+export function setExecutionContext(ctx: ExecutionContext): void {
+  (global as any).__currentExecutionContext = ctx;
+}
+
+/**
+ * 実行コンテキストをクリア
+ */
+export function clearExecutionContext(): void {
+  delete (global as any).__currentExecutionContext;
+}
+
+/**
+ * JWT からユーザー情報を抽出してコンテキストを作成
+ */
+export function createContextFromJWT(token: string): ExecutionContext {
+  try {
+    // JWT デコード（実際の実装では適切なJWTライブラリを使用）
+    const payload = decodeJWT(token);
+    
+    return {
+      userId: payload.sub || payload.userId || '',
+      tenantId: payload.tenantId || payload.tenant || '',
+      roles: payload.roles || payload.authorities || [],
+      ...payload, // 追加のクレームを含める
+    };
+  } catch (error) {
+    throw new Error(`Invalid JWT token: ${error}`);
+  }
+}
+
+/**
+ * ユーザー ID からコンテキストを作成（デモ用）
+ */
+export function createContextFromUserId(
+  userId: string,
+  tenantId: string,
+  roles: string[] = []
+): ExecutionContext {
+  return {
+    userId,
+    tenantId,
+    roles,
+  };
+}
+
+/**
+ * リクエストヘッダーからコンテキストを作成
+ */
+export function createContextFromHeaders(headers: Record<string, string>): ExecutionContext {
+  const authorization = headers.authorization || headers.Authorization;
+  
+  if (authorization && authorization.startsWith('Bearer ')) {
+    const token = authorization.substring(7);
+    return createContextFromJWT(token);
+  }
+  
+  // ヘッダーから直接情報を取得
+  return {
+    userId: headers['x-user-id'] || '',
+    tenantId: headers['x-tenant-id'] || '',
+    roles: headers['x-user-roles'] ? headers['x-user-roles'].split(',') : [],
+  };
+}
+
+/**
+ * ミドルウェア用のコンテキスト設定関数
+ */
+export function withExecutionContext<T>(
+  context: ExecutionContext,
+  fn: () => T | Promise<T>
+): Promise<T> {
+  return new Promise(async (resolve, reject) => {
+    const previousContext = getExecutionContext();
+    
+    try {
+      setExecutionContext(context);
+      const result = await fn();
+      resolve(result);
+    } catch (error) {
+      reject(error);
+    } finally {
+      if (previousContext) {
+        setExecutionContext(previousContext);
+      } else {
+        clearExecutionContext();
+      }
+    }
+  });
+}
+
+/**
+ * 現在のユーザーがロールを持っているかチェック
+ */
+export function hasRole(role: string): boolean {
+  const ctx = getExecutionContext();
+  return ctx ? ctx.roles.includes(role) : false;
+}
+
+/**
+ * 現在のユーザーがいずれかのロールを持っているかチェック
+ */
+export function hasAnyRole(roles: string[]): boolean {
+  const ctx = getExecutionContext();
+  return ctx ? roles.some(role => ctx.roles.includes(role)) : false;
+}
+
+/**
+ * 現在のユーザーがすべてのロールを持っているかチェック
+ */
+export function hasAllRoles(roles: string[]): boolean {
+  const ctx = getExecutionContext();
+  return ctx ? roles.every(role => ctx.roles.includes(role)) : false;
+}
+
+/**
+ * 現在のテナントIDを取得
+ */
+export function getCurrentTenantId(): string | null {
+  const ctx = getExecutionContext();
+  return ctx ? ctx.tenantId : null;
+}
+
+/**
+ * 現在のユーザーIDを取得
+ */
+export function getCurrentUserId(): string | null {
+  const ctx = getExecutionContext();
+  return ctx ? ctx.userId : null;
+}
+
+/**
+ * コンテキストの有効性をチェック
+ */
+export function isValidContext(ctx: ExecutionContext): boolean {
+  return !!(ctx.userId && ctx.tenantId);
+}
+
+/**
+ * 簡易的なJWTデコード（実際の実装では適切なライブラリを使用）
+ */
+function decodeJWT(token: string): any {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      throw new Error('Invalid JWT format');
+    }
+    
+    // Base64 デコード
+    const payload = parts[1];
+    const decoded = Buffer.from(payload, 'base64').toString('utf-8');
+    
+    return JSON.parse(decoded);
+  } catch (error) {
+    throw new Error(`JWT decode failed: ${error}`);
+  }
+}
+
+/**
+ * デバッグ用：現在のコンテキストを表示
+ */
+export function logCurrentContext(): void {
+  const ctx = getExecutionContext();
+  console.log('Current Execution Context:', ctx);
+}
+
+/**
+ * Express.js ミドルウェア用のヘルパー
+ */
+export function createExpressMiddleware() {
+  return (req: any, res: any, next: any) => {
+    try {
+      const context = createContextFromHeaders(req.headers);
+      setExecutionContext(context);
+      next();
+    } catch (error) {
+      res.status(401).json({ error: 'Invalid authentication' });
+    }
+  };
+} 
