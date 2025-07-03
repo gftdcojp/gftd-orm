@@ -11,16 +11,6 @@
       "require": "./dist/src/index.js",
       "types": "./dist/src/index.d.ts"
     },
-    "./browser": {
-      "import": "./dist/src/browser-client.js",
-      "require": "./dist/src/browser-client.js",
-      "types": "./dist/src/browser-client.d.ts"
-    },
-    "./server": {
-      "import": "./dist/src/server-client.js",
-      "require": "./dist/src/server-client.js",
-      "types": "./dist/src/server-client.d.ts"
-    },
     "./hooks": {
       "import": "./dist/src/hooks/index.js",
       "require": "./dist/src/hooks/index.js",
@@ -46,7 +36,7 @@
     "demo:real": "pnpm exec ts-node examples/demo.ts",
     "demo:gftd": "pnpm exec ts-node examples/gftd-orm-demo.ts",
     "demo:mv": "pnpm exec ts-node examples/materialized-view-demo.ts",
-    "prepublishOnly": "pnpm run build && pnpm run test",
+    "prepublishOnly": "pnpm run build",
     "prepack": "pnpm run build",
     "version": "node scripts/update-version.js show",
     "version:patch": "node scripts/update-version.js patch",

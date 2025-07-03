@@ -61,22 +61,21 @@ pnpm add @gftdcojp/gftd-orm
 
 GFTD-ORM is designed to work seamlessly with **Next.js App Router** on both **server-side** and **client-side**.
 
-### Environment-specific Imports (Supabase-like)
+### Environment-specific Imports
 
 ```typescript
-// Browser-only (Client Components) - Secure, lightweight
+// Browser-only (Client Components) - Lightweight
 import { createBrowserClient } from '@gftdcojp/gftd-orm/browser';
 
 // Server-only (Server Components, API Routes, Server Actions) - Full features
 import { createServerClient } from '@gftdcojp/gftd-orm/server';
 
-// Universal (legacy compatibility, deprecated)
+// Universal (legacy compatibility)
 import { createClient } from '@gftdcojp/gftd-orm';
 ```
 
 **🔥 Important: Benefits of Environment-specific Clients**
 
-- **Security** - Sensitive information (API secrets, etc.) is not sent to the browser
 - **Bundle Size Optimization** - Excludes unnecessary dependencies for each environment
 - **Type Safety** - Provides only appropriate APIs for each environment
 - **Explicitness** - Developers intentionally choose the environment
