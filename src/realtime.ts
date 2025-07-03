@@ -34,6 +34,7 @@ export type RealtimeEventType =
   | 'STREAM' 
   | 'BROADCAST' 
   | 'PRESENCE'
+  | 'presence:change'
   | '*';
 
 /**
@@ -56,18 +57,6 @@ export class RealtimeChannel extends EventEmitter {
   /**
    * データベースの変更を監視
    */
-  on(
-    event: RealtimeEventType,
-    callback: (payload: any) => void
-  ): this;
-  on(
-    event: 'error',
-    callback: (error: Error) => void
-  ): this;
-  on(
-    event: 'connected' | 'disconnected',
-    callback: () => void
-  ): this;
   on(event: string, callback: (...args: any[]) => void): this {
     return super.on(event, callback);
   }
@@ -214,7 +203,8 @@ export class RealtimeChannel extends EventEmitter {
         };
 
         this.ws.onmessage = (event) => {
-          this.handleMessage(event.data);
+          const data = typeof event.data === 'string' ? event.data : event.data.toString();
+          this.handleMessage(data);
         };
 
         this.ws.onclose = () => {

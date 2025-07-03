@@ -3,6 +3,9 @@
  */
 
 import jwt from 'jsonwebtoken';
+import { PasswordManager, JWTManager, SessionManager } from './security';
+import { AuditLogManager } from './audit-log';
+import { securityConfig } from './config';
 
 export interface AuthConfig {
   jwtSecret: string;

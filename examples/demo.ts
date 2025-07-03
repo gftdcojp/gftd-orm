@@ -61,15 +61,15 @@ export async function runDemo() {
     // 設計案の初期化例
     await init({
       ksql: {
-        url: process.env.KSQLDB_ENDPOINT || 'https://your-ksqldb-endpoint',
-        apiKey: process.env.KSQLDB_KEY || 'AVYUSCFOJ7ZC7TVD',
-        apiSecret: process.env.KSQLDB_KEY_SECRET || 'USY63e0jbK6mxsZjWpDRk++hCzxOykLpEfFgFrPXSzceHTdevseFVuRpvMN6UWG0',
+        url: process.env.GFTD_KSQLDB_ENDPOINT || 'https://your-ksqldb-endpoint',
+        apiKey: process.env.GFTD_KSQLDB_KEY,
+        apiSecret: process.env.GFTD_KSQLDB_SECRET,
       },
       schemaRegistry: {
-        url: process.env.SCHEMA_REGISTRY_URL || 'https://schema-registry',
+        url: process.env.GFTD_SCHEMA_REGISTRY_URL || 'https://schema-registry',
         auth: { 
-          user: process.env.SCHEMA_REGISTRY_USER || 'user', 
-          pass: process.env.SCHEMA_REGISTRY_PASS || 'pass' 
+          user: process.env.GFTD_SCHEMA_REGISTRY_USER || 'user', 
+          pass: process.env.GFTD_SCHEMA_REGISTRY_PASS || 'pass' 
         },
       }
     });

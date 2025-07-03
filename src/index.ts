@@ -18,6 +18,13 @@ export * from './realtime';
 export * from './storage';
 export * from './auth';
 
+// セキュリティ機能
+export * from './config';
+export * from './security';
+export * from './audit-log';
+export * from './rate-limit';
+export * from './security-middleware';
+
 import { Database, createDatabase } from './database';
 import { Realtime, createRealtime, RealtimeConfig } from './realtime';
 import { Storage, createStorage, StorageConfig } from './storage';
@@ -111,7 +118,7 @@ export class GftdOrmClient {
   /**
    * Supabaseライクなテーブルアクセス
    */
-  from<T = any>(table: string) {
+  from<T = any>(table: string): import('./database').DatabaseQueryBuilder<T> {
     return this.database.from<T>(table);
   }
 

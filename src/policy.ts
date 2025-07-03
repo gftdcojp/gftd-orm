@@ -3,6 +3,8 @@
  */
 
 import { PolicyFunction, ExecutionContext } from './types';
+import { SecurityHelper } from './security';
+import { AuditLogManager } from './audit-log';
 
 /**
  * モデルごとのポリシーレジストリ
@@ -33,10 +35,66 @@ export function getPoliciesForModel(modelName: string): string[] {
   // 実行コンテキストがない場合は空の配列を返す
   const ctx = getCurrentExecutionContext();
   if (!ctx) {
+    AuditLogManager.logSecurityViolation(
+      undefined,
+      undefined,
+      'MISSING_EXECUTION_CONTEXT',
+      { modelName }
+    );
     return [];
   }
 
-  return policyFunctions.map(fn => fn(ctx));
+  // セキュリティチェック: 有効なコンテキストかチェック
+  if (!ctx.userId || !ctx.tenantId) {
+    AuditLogManager.logSecurityViolation(
+      ctx.userId,
+      ctx.tenantId,
+      'INVALID_EXECUTION_CONTEXT',
+      { modelName, context: ctx }
+    );
+    throw new Error('Invalid execution context: missing userId or tenantId');
+  }
+
+  const policies = policyFunctions.map(fn => {
+    try {
+      const policy = fn(ctx);
+      // ポリシーをサニタイズしてSQLインジェクションを防ぐ
+      return sanitizePolicy(policy);
+    } catch (error) {
+      AuditLogManager.logSecurityViolation(
+        ctx.userId,
+        ctx.tenantId,
+        'POLICY_EXECUTION_ERROR',
+        { modelName, error: error instanceof Error ? error.message : 'Unknown error' }
+      );
+      throw error;
+    }
+  });
+
+  return policies;
+}
+
+/**
+ * ポリシー文字列をサニタイズしてSQLインジェクションを防ぐ
+ */
+function sanitizePolicy(policy: string): string {
+  // 基本的なSQLキーワードの検証
+  const dangerousPatterns = [
+    /;\s*(DROP|DELETE|INSERT|UPDATE|CREATE|ALTER|EXEC|EXECUTE)\s/i,
+    /UNION\s+SELECT/i,
+    /--/,
+    /\/\*/,
+    /\*\//,
+  ];
+
+  for (const pattern of dangerousPatterns) {
+    if (pattern.test(policy)) {
+      throw new Error(`Dangerous SQL pattern detected in policy: ${policy}`);
+    }
+  }
+
+  // 基本的なエスケープ
+  return SecurityHelper.escapeSQLString(policy);
 }
 
 /**

@@ -3,6 +3,8 @@
  */
 
 import { WhereCondition, OrderByCondition } from './types';
+import { SecurityHelper } from './security';
+import { AuditLogManager } from './audit-log';
 
 /**
  * SELECT クエリを構築
@@ -185,20 +187,79 @@ function buildOrderByClause(orderBy: OrderByCondition): string {
 }
 
 /**
- * SQL値をフォーマット
+ * SQL値をフォーマット（セキュリティ強化版）
  */
 function formatSqlValue(value: any): string {
   if (value === null || value === undefined) {
     return 'NULL';
   }
+  
   if (typeof value === 'string') {
-    return `'${value.replace(/'/g, "''")}'`; // SQLインジェクション対策
+    // 追加のセキュリティチェック
+    validateSqlString(value);
+    
+    // SQLインジェクション対策の強化
+    const escaped = SecurityHelper.escapeSQLString(value);
+    return `'${escaped}'`;
   }
+  
   if (typeof value === 'boolean') {
     return value ? 'TRUE' : 'FALSE';
   }
+  
   if (value instanceof Date) {
     return `'${value.toISOString()}'`;
   }
-  return String(value);
+  
+  if (typeof value === 'number') {
+    // 数値の検証
+    if (!isFinite(value)) {
+      throw new Error('Invalid numeric value');
+    }
+    return String(value);
+  }
+  
+  // その他の型は文字列として扱うが、サニタイズする
+  const stringValue = String(value);
+  validateSqlString(stringValue);
+  const escaped = SecurityHelper.escapeSQLString(stringValue);
+  return `'${escaped}'`;
+}
+
+/**
+ * SQL文字列の検証
+ */
+function validateSqlString(value: string): void {
+  // 危険なSQLパターンをチェック
+  const dangerousPatterns = [
+    /;\s*(DROP|DELETE|INSERT|UPDATE|CREATE|ALTER|EXEC|EXECUTE)\s/i,
+    /UNION\s+SELECT/i,
+    /-{2,}/,  // SQLコメント
+    /\/\*[\s\S]*?\*\//,  // マルチラインコメント
+    /\b(SCRIPT|EXEC|EXECUTE|EVAL)\b/i,
+    /\b(WAITFOR|DELAY)\b/i,
+  ];
+
+  for (const pattern of dangerousPatterns) {
+    if (pattern.test(value)) {
+      AuditLogManager.logSecurityViolation(
+        undefined,
+        undefined,
+        'SQL_INJECTION_ATTEMPT',
+        { value, pattern: pattern.source }
+      );
+      throw new Error(`Potentially dangerous SQL pattern detected: ${value}`);
+    }
+  }
+
+  // 長すぎる文字列をチェック
+  if (value.length > 10000) {
+    AuditLogManager.logSecurityViolation(
+      undefined,
+      undefined,
+      'EXCESSIVELY_LONG_INPUT',
+      { length: value.length }
+    );
+    throw new Error('Input string is too long');
+  }
 } 

@@ -57,7 +57,7 @@ export class Database {
   /**
    * テーブルからデータを取得（Supabaseライク）
    */
-  from<T = any>(table: string) {
+  from<T = any>(table: string): DatabaseQueryBuilder<T> {
     return new DatabaseQueryBuilder<T>(table);
   }
 
@@ -91,14 +91,14 @@ export class Database {
 /**
  * Supabaseライクなクエリビルダー
  */
-class DatabaseQueryBuilder<T = any> {
-  private selectFields: string[] = ['*'];
-  private whereConditions: any = {};
-  private orderByConditions: any = {};
-  private limitValue?: number;
-  private offsetValue?: number;
+export class DatabaseQueryBuilder<T = any> {
+  protected selectFields: string[] = ['*'];
+  protected whereConditions: any = {};
+  protected orderByConditions: any = {};
+  protected limitValue?: number;
+  protected offsetValue?: number;
 
-  constructor(private tableName: string) {}
+  constructor(protected tableName: string) {}
 
   /**
    * 選択するフィールドを指定

@@ -3,6 +3,8 @@
  */
 
 import { ExecutionContext } from './types';
+import { JWTManager } from './security';
+import { AuditLogManager } from './audit-log';
 
 /**
  * 現在の実行コンテキストを取得
@@ -32,16 +34,33 @@ export function clearExecutionContext(): void {
  */
 export function createContextFromJWT(token: string): ExecutionContext {
   try {
-    // JWT デコード（実際の実装では適切なJWTライブラリを使用）
-    const payload = decodeJWT(token);
+    // 強化されたJWT検証を使用
+    const verificationResult = JWTManager.verifyToken(token);
+    
+    if (!verificationResult.success || !verificationResult.payload) {
+      AuditLogManager.logSecurityViolation(
+        undefined,
+        undefined,
+        'INVALID_JWT_TOKEN',
+        { error: verificationResult.error }
+      );
+      throw new Error(`Invalid JWT token: ${verificationResult.error}`);
+    }
+
+    const payload = verificationResult.payload;
     
     return {
-      userId: payload.sub || payload.userId || '',
-      tenantId: payload.tenantId || payload.tenant || '',
-      roles: payload.roles || payload.authorities || [],
-      ...payload, // 追加のクレームを含める
+      userId: payload.userId || payload.sub || '',
+      tenantId: payload.tenantId || '',
+      roles: payload.role ? [payload.role] : [],
     };
   } catch (error) {
+    AuditLogManager.logSecurityViolation(
+      undefined,
+      undefined,
+      'JWT_VERIFICATION_FAILED',
+      { error: error instanceof Error ? error.message : 'Unknown error' }
+    );
     throw new Error(`Invalid JWT token: ${error}`);
   }
 }
