@@ -1,50 +1,44 @@
 # GFTD ORM
 
-Enterprise-grade real-time data platform with ksqlDB, inspired by Supabase architecture
+Enterprise-grade real-time data platform with ksqlDB foundation
 
-🚀 **Unified platform for Database and Realtime**
+🚀 **Real-time data platform for ksqlDB and Kafka**
 
-An enterprise-grade real-time data platform that provides **Supabase-like unified API** for Database (type-safe ORM) and Realtime (WebSocket) built on Confluent Schema Registry + ksqlDB foundation.
+An enterprise-grade real-time data platform that provides TypeScript-first integration with ksqlDB, Confluent Schema Registry, and Kafka streams.
 
 ## 🎯 Features
 
 ### 🔷 Database
-- **Full TypeScript Support** - Type-safe DSL similar to Drizzle ORM
-- **ksqlDB Integration** - Stream/Table mapping with real-time processing  
-- **Row-Level Security** - Policy-based row-level security
-- **Schema Registry** - Automatic Avro/JSON Schema management
+- **Full TypeScript Support** - Type-safe schema definitions and field types
+- **ksqlDB Integration** - Direct integration with ksqlDB for stream processing
+- **Schema Registry** - Automatic Avro/JSON Schema management with Confluent Schema Registry
 
 ### ⚡ Realtime
-- **WebSocket Communication** - Real-time data updates
-- **Table Monitoring** - INSERT/UPDATE/DELETE events
-- **Stream Monitoring** - Kafka stream events
+- **WebSocket Communication** - Real-time data updates via WebSocket
+- **Table Monitoring** - Monitor ksqlDB table changes
+- **Stream Monitoring** - Monitor Kafka stream events
 - **Presence Features** - User online status management
-- **Broadcast** - Real-time communication
+- **Broadcast** - Real-time message broadcasting
 
-### 🛡️ Security
-- **SQL Injection Prevention** - Parameterized queries and escape processing
-- **Audit Logging** - Detailed recording of all activities
-- **CSRF/XSS Protection** - Cross-site attack prevention
+### 🛡️ Security & Monitoring
+- **Audit Logging** - Comprehensive activity logging with Winston
+- **Rate Limiting** - Built-in rate limiting and request throttling
+- **Configuration Management** - Environment-based configuration
 
 ## 🏗️ Architecture
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│ GFTD ORM Client │    │ Database        │    │ Realtime        │
-│ (Supabase-like) │    │ (ksqlDB + SR)   │    │ (WebSocket)     │
+│ GFTD ORM Client │    │ ksqlDB          │    │ Realtime        │
+│ (TypeScript)    │    │ + Schema Reg.   │    │ (WebSocket)     │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
          │                       │                       │
          └───────────────────────┼───────────────────────┘
-                                 │                       │                       
-                                 │              ┌─────────────────┐
-                                 │              │ Kafka Topics    │
-                                 │              │ (Events)        │
-                                 │              └─────────────────┘
-                                 │                       
-                        ┌─────────────────┐
-                        │ Schema Registry │
-                        │ (Avro/JSON)     │
-                        └─────────────────┘
+                                 │
+                        ┌─────────────────┐    ┌─────────────────┐
+                        │ Schema Registry │    │ Kafka Topics    │
+                        │ (Avro/JSON)     │    │ (Events)        │
+                        └─────────────────┘    └─────────────────┘
 ```
 
 ## 📦 Installation
