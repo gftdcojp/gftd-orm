@@ -132,18 +132,18 @@ export class MapFieldType extends BaseFieldType {
 }
 
 /**
- * FieldType エクスポート - 設計案の通り
+ * FieldType エクスポート - 設計案の通り（各フィールドは新しいインスタンスを返す）
  */
 export const FieldType = {
-  STRING: new StringFieldType(),
-  INT: new IntFieldType(),
-  LONG: new LongFieldType(),
-  DOUBLE: new DoubleFieldType(),
-  BOOLEAN: new BooleanFieldType(),
-  UUID: new UuidFieldType(),
-  TIMESTAMP: new TimestampFieldType(),
-  DATE: new DateFieldType(),
-  TIME: new TimeFieldType(),
+  get STRING() { return new StringFieldType(); },
+  get INT() { return new IntFieldType(); },
+  get LONG() { return new LongFieldType(); },
+  get DOUBLE() { return new DoubleFieldType(); },
+  get BOOLEAN() { return new BooleanFieldType(); },
+  get UUID() { return new UuidFieldType(); },
+  get TIMESTAMP() { return new TimestampFieldType(); },
+  get DATE() { return new DateFieldType(); },
+  get TIME() { return new TimeFieldType(); },
   DECIMAL: (precision?: number, scale?: number) => new DecimalFieldType(precision, scale),
   ARRAY: (itemType: BaseFieldType) => new ArrayFieldType(itemType),
   MAP: (valueType: BaseFieldType) => new MapFieldType(valueType),
