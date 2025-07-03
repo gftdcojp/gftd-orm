@@ -32,10 +32,7 @@
     "test:benchmark": "vitest run --reporter=verbose src/__tests__/benchmark.test.ts",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write src/**/*.ts",
-    "demo": "pnpm exec ts-node examples/mock-demo.ts",
-    "demo:real": "pnpm exec ts-node examples/demo.ts",
-    "demo:gftd": "pnpm exec ts-node examples/gftd-orm-demo.ts",
-    "demo:mv": "pnpm exec ts-node examples/materialized-view-demo.ts",
+
     "prepublishOnly": "pnpm run build",
     "prepack": "pnpm run build",
     "version": "node scripts/update-version.js show",
