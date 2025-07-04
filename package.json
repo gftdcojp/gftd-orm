@@ -5,6 +5,9 @@
   "main": "dist/src/index.js",
   "module": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
+  "bin": {
+    "gftd-orm": "./dist/src/cli.js"
+  },
   "exports": {
     ".": {
       "import": "./dist/src/index.js",
@@ -40,7 +43,10 @@
     "version:major": "node scripts/update-version.js major",
     "version:next": "node scripts/update-version.js next",
     "calver": "node scripts/update-version.js",
-    "calver:init": "node scripts/update-version.js patch"
+    "calver:init": "node scripts/update-version.js patch",
+    "cli:generate": "ts-node src/cli.ts generate-types",
+    "cli:generate-all": "ts-node src/cli.ts generate-all",
+    "cli:list": "ts-node src/cli.ts list"
   },
   "keywords": [
     "ksqldb",
@@ -81,6 +87,7 @@
   "dependencies": {
     "avsc": "^5.7.7",
     "axios": "^1.6.0",
+    "commander": "^11.1.0",
     "dotenv": "^16.3.1",
     "uuid": "^9.0.1",
     "winston": "^3.11.0",

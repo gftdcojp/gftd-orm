@@ -34,6 +34,41 @@ export function initializeKsqlDbClient(ksqlConfig: KsqlDbConfig): void {
 }
 
 /**
+ * 配列レスポンスをオブジェクトに変換する関数
+ * @param rows - データ行の配列
+ * @param columnNames - カラム名の配列
+ * @returns オブジェクトの配列
+ */
+export function transformArrayRowsToObjects(rows: any[][], columnNames: string[]): Record<string, any>[] {
+  if (!rows || !Array.isArray(rows) || rows.length === 0) {
+    return [];
+  }
+  
+  if (!columnNames || !Array.isArray(columnNames) || columnNames.length === 0) {
+    log.warn('transformArrayRowsToObjects: columnNames is empty, returning original rows');
+    return rows as any;
+  }
+
+  return rows.map((row) => {
+    const obj: Record<string, any> = {};
+    columnNames.forEach((columnName, index) => {
+      obj[columnName.toLowerCase()] = row[index];
+    });
+    return obj;
+  });
+}
+
+/**
+ * オプション型 - Pull Queryの結果形式を指定
+ */
+export interface PullQueryOptions {
+  /** レスポンス形式: 'object' (デフォルト) | 'array' */
+  format?: 'object' | 'array';
+  /** テーブル名の正規化を行うかどうか */
+  normalizeTableName?: boolean;
+}
+
+/**
  * DDL/DML文を実行（CREATE, INSERT, UPDATE, DELETE, DROP など）
  * /ksql エンドポイントを使用
  */
@@ -60,13 +95,18 @@ export async function executeQuery(sql: string): Promise<any> {
 /**
  * Pull Query を実行（一度だけ結果を取得するSELECT文）
  * /query-stream エンドポイントを使用
+ * @param sql - 実行するSQL文
+ * @param options - Pull Queryのオプション
  */
-export async function executePullQuery(sql: string): Promise<any> {
+export async function executePullQuery(sql: string, options: PullQueryOptions = {}): Promise<any> {
   if (!ksqlClient) {
     throw new Error('ksqlDB client is not initialized. Call initializeKsqlDbClient() first.');
   }
 
+  const { format = 'object', normalizeTableName = true } = options;
+
   log.debug(`executePullQuery - SQL: ${sql}`);
+  log.debug(`executePullQuery - Options:`, options);
   log.debug(`executePullQuery - Config:`, config);
 
   try {
@@ -106,7 +146,24 @@ export async function executePullQuery(sql: string): Promise<any> {
       }
 
       log.debug(`executePullQuery - Results count: ${results.length}`);
-      return { header, data: results };
+      
+      // 結果の形式を選択
+      if (format === 'object' && header?.columnNames) {
+        const transformedData = transformArrayRowsToObjects(results, header.columnNames);
+        return { 
+          header, 
+          data: transformedData,
+          columnNames: header.columnNames,
+          queryId: header.queryId 
+        };
+      } else {
+        return { 
+          header, 
+          data: results,
+          columnNames: header?.columnNames,
+          queryId: header?.queryId 
+        };
+      }
     }
 
     log.debug(`executePullQuery - Raw response data:`, response.data);

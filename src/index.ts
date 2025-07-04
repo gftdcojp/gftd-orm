@@ -14,6 +14,13 @@ export * from './config';
 export * from './audit-log';
 export * from './rate-limit';
 export * from './utils/logger';
+export * from './database-client';
+export * from './browser-client';
+export * from './http-client';
+
+// 🚀 NEW: Type Generation Features
+export * from './type-generator';
+export { runCli } from './cli';
 
 // Import required modules for client implementation
 import { initializeKsqlDbClient, getClientConfig as getKsqlConfig } from './ksqldb-client';

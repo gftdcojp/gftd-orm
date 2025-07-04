@@ -4,6 +4,7 @@
 
 import { isBrowser } from './utils/env';
 import { KsqlDbConfig } from './types';
+import { transformArrayRowsToObjects, PullQueryOptions } from './ksqldb-client';
 
 export interface ClientConfig {
   url: string;
@@ -115,13 +116,27 @@ export class HttpClient {
   }
 
   /**
-   * Pull Query を実行
+   * Pull Query を実行（ブラウザ用）
+   * @param sql - 実行するSQL文
+   * @param options - Pull Queryのオプション
    */
-  async executePullQuery(sql: string): Promise<any> {
+  async executePullQuery(sql: string, options: PullQueryOptions = {}): Promise<any> {
+    const { format = 'object' } = options;
+    
     const response = await this.post('/query-stream', {
       sql,
       properties: {},
     });
+
+    // ブラウザ環境では、レスポンスの形式が異なる可能性があるため、
+    // 基本的な変換処理を実装
+    if (format === 'object' && response && Array.isArray(response.data) && response.columnNames) {
+      const transformedData = transformArrayRowsToObjects(response.data, response.columnNames);
+      return {
+        ...response,
+        data: transformedData
+      };
+    }
 
     return response;
   }
@@ -194,13 +209,16 @@ export class KsqlDbClientBrowser {
 
   /**
    * Pull Query を実行
+   * @param sql - 実行するSQL文
+   * @param options - Pull Queryのオプション（デフォルトでオブジェクト形式を返す）
    */
-  async executePullQuery(sql: string): Promise<any> {
+  async executePullQuery(sql: string, options: PullQueryOptions = {}): Promise<any> {
     console.log(`[DEBUG] KsqlDbClientBrowser.executePullQuery - SQL: ${sql}`);
+    console.log(`[DEBUG] KsqlDbClientBrowser.executePullQuery - Options:`, options);
     console.log(`[DEBUG] KsqlDbClientBrowser.executePullQuery - Config:`, this.config);
     
     try {
-      const response = await this.httpClient.executePullQuery(sql);
+      const response = await this.httpClient.executePullQuery(sql, options);
       console.log(`[DEBUG] KsqlDbClientBrowser.executePullQuery - Response:`, response);
       return response;
     } catch (error: any) {
