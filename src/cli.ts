@@ -22,7 +22,7 @@ dotenv.config();
 /**
  * CLIのバージョン情報
  */
-const CLI_VERSION = '25.07.6';
+const CLI_VERSION = '25.07.7';
 
 /**
  * 設定オプション
