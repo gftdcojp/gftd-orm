@@ -1,12 +1,12 @@
 {
   "name": "@gftdcojp/gftd-orm",
-  "version": "25.07.7",
+  "version": "25.07.8",
   "description": "Enterprise-grade real-time data platform with ksqlDB, inspired by Supabase architecture",
   "main": "dist/src/index.js",
   "module": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "bin": {
-    "gftd-orm": "./dist/cli.js"
+    "gftd-orm": "./dist/src/cli.js"
   },
   "exports": {
     ".": {
