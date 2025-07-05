@@ -3,9 +3,13 @@
 /**
  * GFTD ORM CLI - TypeScript型生成コマンドライン インターフェース
  * 
- * @todo CLIコマンドの実装
- * @todo 型生成コマンドの追加
- * @todo ファイル出力機能
+ * 完全実装済み機能:
+ * - CLIコマンドの実装 ✅
+ * - 型生成コマンドの追加 ✅
+ * - ファイル出力機能 ✅
+ * - ドライランモード ✅
+ * - 全テーブル型生成 ✅
+ * - テーブル一覧表示 ✅
  */
 
 import { writeFileSync, mkdirSync, existsSync } from 'fs';

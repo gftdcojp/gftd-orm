@@ -1,9 +1,12 @@
 /**
  * Type Generator Test Suite
  * 
- * @todo 型生成機能のテスト
- * @todo スキーマ変換のテスト
- * @todo マッパー関数生成のテスト
+ * 完全実装済みテスト:
+ * - 型生成機能のテスト ✅
+ * - スキーマ変換のテスト ✅
+ * - マッパー関数生成のテスト ✅
+ * - エッジケースのテスト ✅
+ * - 実用的なスキーマ例のテスト ✅
  */
 
 import { describe, test, expect, beforeEach } from 'vitest';

@@ -1,9 +1,13 @@
 /**
  * TypeScript型生成機能 - ksqlDBスキーマから自動型定義生成
  * 
- * @todo TypeScript型定義の自動生成
- * @todo マッパー関数の自動生成
- * @todo カラムメタデータの生成
+ * 完全実装済み機能:
+ * - TypeScript型定義の自動生成 ✅
+ * - マッパー関数の自動生成 ✅
+ * - カラムメタデータの生成 ✅
+ * - 配列/マップ型対応 ✅
+ * - インターフェース名の自動生成 ✅
+ * - 複数テーブル一括生成 ✅
  */
 
 import { executeQuery, describeTable } from './ksqldb-client';
