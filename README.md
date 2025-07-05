@@ -6,35 +6,35 @@ Enterprise-grade real-time data platform with ksqlDB foundation
 
 An enterprise-grade real-time data platform that provides TypeScript-first integration with ksqlDB, Confluent Schema Registry, and Kafka streams.
 
-## 🎯 実装状況
+## 🎯 Implementation Status
 
-### ✅ 完成済み機能（完成度: 95%以上）
+### ✅ Completed Features (95%+ Complete)
 
-#### 📊 コア機能
-- **TypeScript型システム**: フィールド型定義、スキーマ定義
-- **ksqlDBクライアント**: 完全実装（DDL、DML、プルクエリ、プッシュクエリ）
-- **Schema Registry**: 完全実装（スキーマ登録、取得、互換性チェック）
-- **配列→オブジェクト変換**: ksqlDBレスポンスの自動変換機能
-- **TypeScript型生成**: ksqlDBスキーマから自動型定義生成
-- **CLIコマンド**: 完全実装（型生成、テーブル一覧、ドライラン等）
+#### 📊 Core Features
+- **TypeScript Type System**: Field type definitions, schema definitions
+- **ksqlDB Client**: Complete implementation (DDL, DML, pull queries, push queries)
+- **Schema Registry**: Complete implementation (schema registration, retrieval, compatibility checks)
+- **Array-to-Object Conversion**: Automatic ksqlDB response transformation
+- **TypeScript Type Generation**: Automatic type definition generation from ksqlDB schemas
+- **CLI Commands**: Complete implementation (type generation, table listing, dry run, etc.)
 
-#### 🛡️ セキュリティ機能
-- **JWT認証**: 完全実装（トークン生成、検証、リフレッシュ）
-- **Auth0統合**: 完全実装（デフォルト設定、カスタム設定対応）
-- **匿名キーシステム**: 完全実装（Supabase風認証）
-- **行レベルセキュリティ(RLS)**: 完全実装（ポリシー管理、権限制御）
-- **監査ログ**: 包括的なログ機能
-- **レート制限**: 多層的なレート制限機能
+#### 🛡️ Security Features
+- **JWT Authentication**: Complete implementation (token generation, verification, refresh)
+- **Auth0 Integration**: Complete implementation (default settings, custom configuration support)
+- **Anonymous Key System**: Complete implementation (Supabase-style authentication)
+- **Row Level Security (RLS)**: Complete implementation (policy management, access control)
+- **Audit Logging**: Comprehensive logging functionality
+- **Rate Limiting**: Multi-layer rate limiting functionality
 
-#### ⚡ リアルタイム機能
-- **Realtime機能**: WebSocketベースのリアルタイム通信
-- **Reactフック**: 完全実装（useGftdOrm、useBrowserClient等）
-- **統合クライアント**: 各コンポーネントの統合レイヤー
+#### ⚡ Realtime Features
+- **Realtime Functionality**: WebSocket-based real-time communication
+- **React Hooks**: Complete implementation (useGftdOrm, useBrowserClient, etc.)
+- **Integrated Client**: Integration layer for all components
 
-#### 🛠️ 開発者体験
-- **高レベルAPI**: `createClient`、`defineSchema`、`init`、`healthCheck`等の統合API
-- **包括的テスト**: 完全実装（型生成、ベンチマーク、スキーマ等）
-- **TypeScript完全対応**: 型安全な開発環境
+#### 🛠️ Developer Experience
+- **High-level API**: Unified APIs like `createClient`, `defineSchema`, `init`, `healthCheck`
+- **Comprehensive Testing**: Complete implementation (type generation, benchmarks, schemas)
+- **Full TypeScript Support**: Type-safe development environment
 
 ## 🎯 Features
 
@@ -95,12 +95,12 @@ pnpm add @gftdcojp/gftd-orm
 
 ## 🚀 Quick Start
 
-### 1. ✅ オブジェクト形式レスポンス（完成機能）
+### 1. ✅ Object Format Response (Completed Feature)
 
 ```typescript
 import { executePullQuery, PullQueryOptions } from '@gftdcojp/gftd-orm';
 
-// デフォルト: オブジェクト形式で返される
+// Default: Returns in object format
 const result = await executePullQuery('SELECT * FROM users_table LIMIT 10;');
 console.log(result.data);
 // [
@@ -112,7 +112,7 @@ console.log(result.data);
 //   }
 // ]
 
-// 従来通り配列形式で取得したい場合
+// To get array format (legacy behavior)
 const options: PullQueryOptions = { format: 'array' };
 const arrayResult = await executePullQuery('SELECT * FROM users_table LIMIT 10;', options);
 console.log(arrayResult.data);
@@ -121,26 +121,26 @@ console.log(arrayResult.data);
 // ]
 ```
 
-### 2. ✅ TypeScript型生成（完成機能）
+### 2. ✅ TypeScript Type Generation (Completed Feature)
 
-#### CLIコマンドで型生成
+#### CLI Commands for Type Generation
 
 ```bash
-# 単一テーブルの型生成
+# Generate types for a single table
 npx gftd-orm generate-types --table OSHIETE_SOURCES_TABLE --output ./types
 
-# 全テーブルの型生成
+# Generate types for all tables
 npx gftd-orm generate-all --output ./types
 
-# テーブル一覧を表示
+# List all tables
 npx gftd-orm list
 
-# 環境変数で設定
+# Set via environment variables
 export GFTD_DB_URL="http://localhost:8088"
 export GFTD_DB_API_KEY="your-api-key" 
 export GFTD_DB_API_SECRET="your-secret"
 
-# またはオプションで指定
+# Or specify via options
 npx gftd-orm generate-types \
   --table USERS_TABLE \
   --url http://localhost:8088 \
@@ -149,10 +149,10 @@ npx gftd-orm generate-types \
   --output ./types
 ```
 
-#### 生成される型定義例
+#### Generated Type Definition Example
 
 ```typescript
-// types/oshiete_sources.ts - 自動生成されるファイル
+// types/oshiete_sources.ts - Auto-generated file
 
 /**
  * Generated TypeScript interface for ksqlDB table: OSHIETE_SOURCES_TABLE
@@ -209,30 +209,30 @@ export const OSHIETE_SOURCES_COLUMNS = {
 } as const;
 ```
 
-#### 生成された型の使用
+#### Using Generated Types
 
 ```typescript
 import { executePullQuery } from '@gftdcojp/gftd-orm';
 import { OshieteSourcesTable, mapOshieteSourcesTableRow } from './types/oshiete_sources';
 
-// 型安全なクエリ実行
+// Type-safe query execution
 const result = await executePullQuery('SELECT * FROM OSHIETE_SOURCES_TABLE LIMIT 10;');
 
-// 自動でオブジェクト形式に変換済み（v25.07.8）
+// Automatically converted to object format (v25.07.8)
 const sources: OshieteSourcesTable[] = result.data;
 
-// または配列形式の場合は手動でマッピング
+// Or manual mapping for array format
 const arrayResult = await executePullQuery('SELECT * FROM OSHIETE_SOURCES_TABLE LIMIT 10;', { format: 'array' });
 const mappedSources: OshieteSourcesTable[] = arrayResult.data.map(mapOshieteSourcesTableRow);
 
-// 型安全にアクセス
+// Type-safe access
 sources.forEach(source => {
-  console.log(`Title: ${source.title}`); // TypeScript型チェック有効
-  console.log(`Tags: ${source.tags?.join(', ') || 'No tags'}`); // null安全
+  console.log(`Title: ${source.title}`); // TypeScript type checking enabled
+  console.log(`Tags: ${source.tags?.join(', ') || 'No tags'}`); // null-safe
 });
 ```
 
-### 3. プログラマティック型生成
+### 3. Programmatic Type Generation
 
 ```typescript
 import { 
@@ -241,29 +241,29 @@ import {
   listAllTables 
 } from '@gftdcojp/gftd-orm';
 
-// 単一テーブルの型生成
+// Generate types for a single table
 const schema = await getTableSchema('USERS_TABLE');
 const typeInfo = generateCompleteTypeDefinition(schema);
 
 console.log(typeInfo.fullCode);
-// 完全なTypeScript型定義が出力される
+// Complete TypeScript type definition is output
 
-// 全テーブルの一覧取得
+// Get list of all tables
 const tables = await listAllTables();
 console.log('Available tables:', tables.map(t => t.name));
 ```
 
-### 4. ✅ Auth0統合の使用方法（完成機能）
+### 4. ✅ Auth0 Integration Usage (Completed Feature)
 
 ```typescript
 import { createAuth0Client, auth0 } from '@gftdcojp/gftd-orm';
 
-// 1. デフォルト設定でAuth0トークンを使用（設定不要）
-const auth0Token = "eyJ..."; // Auth0から取得したJWTトークン
+// 1. Use Auth0 token with default settings (no configuration needed)
+const auth0Token = "eyJ..."; // JWT token obtained from Auth0
 const client = createAuth0Client('http://localhost:8088', auth0Token);
-// デフォルト: gftd.jp.auth0.com ドメインを使用
+// Default: Uses gftd.jp.auth0.com domain
 
-// 2. カスタムAuth0設定を使用する場合
+// 2. For custom Auth0 configuration
 const customClient = createAuth0Client('http://localhost:8088', auth0Token, {
   auth0Config: {
     domain: 'your-custom.auth0.com',
@@ -272,45 +272,45 @@ const customClient = createAuth0Client('http://localhost:8088', auth0Token, {
   }
 });
 
-// 3. 認証状態の確認
-console.log('認証状態:', {
+// 3. Check authentication status
+console.log('Authentication Status:', {
   isAuthenticated: client.auth.isAuthenticated,
   user: client.auth.user,
   error: client.auth.error,
 });
 
-// 4. 安全なデータアクセス（RLS自動適用）
+// 4. Secure data access (RLS automatically applied)
 const { data, error } = await client.query(`
   SELECT id, name, email, created_at 
   FROM user_profiles 
   WHERE status = 'active'
 `);
 
-// 5. 権限・ロールベースのアクセス制御
+// 5. Permission & role-based access control
 if (client.hasPermission('read:sensitive_data')) {
   const { data } = await client.query('SELECT * FROM sensitive_table');
 }
 
 if (client.hasRole('admin')) {
-  // 管理者のみアクセス可能な操作
+  // Admin-only operations
 }
 
-// 6. リアルタイムストリーミング
+// 6. Real-time streaming
 const subscription = await client.stream(
   'SELECT * FROM user_activity EMIT CHANGES',
-  (update) => console.log('リアルタイム更新:', update)
+  (update) => console.log('Real-time update:', update)
 );
 
-// 7. Express.jsでのミドルウェア使用
+// 7. Express.js middleware usage
 import { createAuth0Middleware } from '@gftdcojp/gftd-orm';
 
-// デフォルト設定でミドルウェア使用
+// Using middleware with default settings
 app.use('/api/protected', createAuth0Middleware({
   requiredPermissions: ['read:data'],
   requiredRoles: ['user'],
 }));
 
-// カスタムAuth0設定でミドルウェア使用
+// Using middleware with custom Auth0 configuration
 app.use('/api/custom', createAuth0Middleware({
   requiredPermissions: ['read:data'],
   requiredRoles: ['user'],
@@ -326,17 +326,17 @@ app.get('/api/protected/users', async (req, res) => {
 });
 ```
 
-### 5. ✅ Supabase風認証システムの使用方法（匿名キー）
+### 5. ✅ Supabase-style Authentication System Usage (Anonymous Key)
 
 ```typescript
 import { createClient, getKeys, rls } from '@gftdcojp/gftd-orm';
 
-// 1. 匿名キーを取得（初回起動時に自動生成）
+// 1. Get anonymous key (auto-generated on first startup)
 const keys = getKeys();
-console.log('公開可能な匿名キー:', keys.anonKey);
-console.log('サーバー専用キー:', keys.serviceRoleKey); // 絶対に公開しない
+console.log('Public anonymous key:', keys.anonKey);
+console.log('Server-only key:', keys.serviceRoleKey); // Never expose this publicly
 
-// 2. クライアント作成（フロントエンド）
+// 2. Create client (frontend)
 const client = createClient('http://localhost:8088', keys.anonKey!, {
   auth: {
     autoRefreshToken: true,
@@ -344,7 +344,7 @@ const client = createClient('http://localhost:8088', keys.anonKey!, {
   }
 });
 
-// 3. 安全なデータアクセス（RLS自動適用）
+// 3. Secure data access (RLS automatically applied)
 const { data, error } = await client.query(`
   SELECT id, name, email, created_at 
   FROM user_profiles 
@@ -352,20 +352,20 @@ const { data, error } = await client.query(`
 `);
 
 if (error) {
-  console.error('アクセス拒否:', error);
+  console.error('Access denied:', error);
 } else {
-  console.log('取得データ:', data);
+  console.log('Retrieved data:', data);
 }
 
-// 4. リアルタイムストリーミング
+// 4. Real-time streaming
 const subscription = await client.stream(
   'SELECT * FROM user_activity EMIT CHANGES',
   (update) => {
-    console.log('リアルタイム更新:', update);
+    console.log('Real-time update:', update);
   }
 );
 
-// 5. RLSポリシーの設定（管理者のみ）
+// 5. RLS policy configuration (admin only)
 rls.enableTableRLS('user_profiles');
 rls.createPolicy({
   id: 'authenticated-user-access',
@@ -378,15 +378,15 @@ rls.createPolicy({
   isActive: true,
 });
 
-// 6. 認証状態の確認
-console.log('認証情報:', {
+// 6. Check authentication status
+console.log('Authentication info:', {
   isAuthenticated: client.auth.isAuthenticated,
   isAnonymous: client.auth.isAnonymous,
   user: client.auth.user,
 });
 ```
 
-### 6. 基本的な使用方法（従来機能）
+### 6. Basic Usage (Legacy Features)
 
 ```typescript
 import { 
@@ -400,24 +400,24 @@ import {
   RateLimitManager 
 } from '@gftdcojp/gftd-orm';
 
-// ksqlDBクライアントの初期化
+// Initialize ksqlDB client
 initializeKsqlDbClient({
   url: 'http://localhost:8088',
   apiKey: 'your-api-key',
   apiSecret: 'your-api-secret',
 });
 
-// クエリの実行（自動でオブジェクト形式）
+// Execute queries (automatically in object format)
 const result = await executePullQuery('SELECT * FROM users_table LIMIT 10;');
-console.log(result.data); // オブジェクトの配列
+console.log(result.data); // Array of objects
 
-// Schema Registryの初期化
+// Initialize Schema Registry
 initializeSchemaRegistryClient({
   url: 'http://localhost:8081',
   auth: { user: 'admin', pass: 'admin' }
 });
 
-// スキーマの登録
+// Register schema
 await registerSchema('user-value', {
   type: 'record',
   name: 'User',
@@ -428,7 +428,7 @@ await registerSchema('user-value', {
   ]
 });
 
-// リアルタイム機能
+// Realtime features
 const realtime = createRealtime({
   url: 'ws://localhost:8088',
   apiKey: 'your-api-key'
@@ -461,7 +461,7 @@ GFTD_SCHEMA_REGISTRY_AUTH_PASSWORD=admin
 GFTD_REALTIME_URL=ws://localhost:8088
 GFTD_REALTIME_API_KEY=your-realtime-api-key
 
-# Auth0 Integration (デフォルト値設定済み - 必要な場合のみ上書き)
+# Auth0 Integration (Default values pre-configured - override only if needed)
 AUTH0_DOMAIN=gftd.jp.auth0.com
 AUTH0_AUDIENCE=https://gftd.jp.auth0.com/api/v2/
 AUTH0_CLIENT_ID=k0ziPQ6IkDxE1AUSvzx5PwXtnf4y81x0
@@ -476,20 +476,20 @@ GFTD_RATE_LIMIT_WINDOW_MS=60000
 GFTD_RATE_LIMIT_MAX_REQUESTS=100
 ```
 
-### 🔐 Auth0設定について
+### 🔐 About Auth0 Configuration
 
-**デフォルト設定**:
-- `AUTH0_DOMAIN`: `gftd.jp.auth0.com` （設定済み）
-- `AUTH0_CLIENT_ID`: `k0ziPQ6IkDxE1AUSvzx5PwXtnf4y81x0` （設定済み）
+**Default Settings**:
+- `AUTH0_DOMAIN`: `gftd.jp.auth0.com` (pre-configured)
+- `AUTH0_CLIENT_ID`: `k0ziPQ6IkDxE1AUSvzx5PwXtnf4y81x0` (pre-configured)
 
-環境変数での設定は**オプション**です。異なるAuth0テナントを使用する場合のみ設定してください。
+Environment variable configuration is **optional**. Only set these if you're using a different Auth0 tenant.
 
-**プログラムでの設定**:
+**Programmatic Configuration**:
 ```typescript
-// デフォルト設定使用（推奨）
+// Use default settings (recommended)
 const client = createAuth0Client(ksqlDbUrl, auth0Token);
 
-// カスタム設定使用
+// Use custom configuration
 const client = createAuth0Client(ksqlDbUrl, auth0Token, {
   auth0Config: {
     domain: 'your-custom.auth0.com',
@@ -517,14 +517,14 @@ pnpm lint
 pnpm format
 
 # ✅ CLI Commands
-npx gftd-orm list                           # テーブル一覧表示
-npx gftd-orm generate-types --table <name>  # 単一テーブル型生成
-npx gftd-orm generate-all                   # 全テーブル型生成
+npx gftd-orm list                           # List all tables
+npx gftd-orm generate-types --table <name>  # Generate types for single table
+npx gftd-orm generate-all                   # Generate types for all tables
 
 # Development CLI (for contributors)
-pnpm cli:list                              # テーブル一覧表示
-pnpm cli:generate --table <name>          # 単一テーブル型生成
-pnpm cli:generate-all                     # 全テーブル型生成
+pnpm cli:list                              # List all tables
+pnpm cli:generate --table <name>          # Generate types for single table
+pnpm cli:generate-all                     # Generate types for all tables
 ```
 
 ## 🚧 Roadmap
@@ -550,62 +550,62 @@ pnpm cli:generate-all                     # 全テーブル型生成
 - [ ] **VS Code Extension** - IDE integration for type generation
 - [ ] **Watch Mode** - Automatic type regeneration on schema changes
 
-## ✅ v25.07.8 完成機能詳細
+## ✅ v25.07.8 Completed Features Details
 
-### 1. 🔐 Auth0統合システム（完成機能）
+### 1. 🔐 Auth0 Integration System (Completed Feature)
 
-**実装内容**:
-- **Auth0 JWT検証**: JWKS（JSON Web Key Set）を使った安全なトークン検証
-- **自動ユーザーマッピング**: Auth0クレームをGFTD ORMユーザーペイロードに変換
-- **権限・ロール連携**: Auth0のカスタムクレームによる細かいアクセス制御
-- **RLS自動適用**: Auth0ユーザー情報に基づくRow Level Security
+**Implementation Details**:
+- **Auth0 JWT Verification**: Secure token validation using JWKS (JSON Web Key Set)
+- **Automatic User Mapping**: Convert Auth0 claims to GFTD ORM user payload
+- **Permission & Role Integration**: Fine-grained access control via Auth0 custom claims
+- **Automatic RLS Application**: Row Level Security based on Auth0 user information
 
-**使用例**:
+**Usage Example**:
 ```typescript
 import { createAuth0Client } from '@gftdcojp/gftd-orm';
 
-// Auth0トークンで認証（既存のAuth0システムと完全統合）
+// Authenticate with Auth0 token (full integration with existing Auth0 systems)
 const client = createAuth0Client('http://localhost:8088', auth0Token);
 
-// 権限に基づく安全なデータアクセス
+// Permission-based secure data access
 if (client.hasPermission('read:data')) {
   const { data } = await client.query('SELECT * FROM users');
 }
 ```
 
-### 2. 🔐 Supabase風認証システム（完成機能）
+### 2. 🔐 Supabase-style Authentication System (Completed Feature)
 
-**実装内容**:
-- **JWT認証システム**: トークン生成・検証・リフレッシュ機能
-- **匿名キーシステム**: 公開可能な匿名キーとサービスロールキー
-- **Row Level Security (RLS)**: ksqlDBクエリの動的フィルタリング
-- **統合クライアント**: Supabaseと同様のAPI設計
+**Implementation Details**:
+- **JWT Authentication System**: Token generation, verification, and refresh functionality
+- **Anonymous Key System**: Public-safe anonymous key and service role key
+- **Row Level Security (RLS)**: Dynamic filtering of ksqlDB queries
+- **Integrated Client**: Supabase-like API design
 
-**使用例**:
+**Usage Example**:
 ```typescript
 import { createClient, getKeys } from '@gftdcojp/gftd-orm';
 
-// 匿名キーで安全にアクセス（公開可能）
+// Secure access with anonymous key (public-safe)
 const keys = getKeys();
 const client = createClient('http://localhost:8088', keys.anonKey!);
 
-// RLSが自動適用されたクエリ実行
+// Query execution with automatic RLS application
 const { data, error } = await client.query('SELECT * FROM users');
 ```
 
 ### 3. 🛡️ Row Level Security (RLS)
 
-**機能**:
-- テーブル単位でのアクセス制御
-- ユーザーロール基盤のポリシー管理
-- 動的なWHERE句の自動追加
-- Supabase互換のポリシー記法
+**Features**:
+- Table-level access control
+- User role-based policy management
+- Dynamic WHERE clause injection
+- Supabase-compatible policy syntax
 
-**ポリシー例**:
+**Policy Example**:
 ```typescript
 import { rls } from '@gftdcojp/gftd-orm';
 
-// ユーザーが自分のデータのみアクセス可能
+// Users can only access their own data
 rls.createPolicy({
   id: 'user-owns-data',
   name: 'User Owns Data',
@@ -618,45 +618,45 @@ rls.createPolicy({
 });
 ```
 
-### 4. 🔑 匿名キーシステム
+### 4. 🔑 Anonymous Key System
 
-**特徴**:
-- **匿名キー**: フロントエンドで安全に使用可能
-- **サービスロールキー**: バックエンド専用の全権限キー
-- **自動JWT生成**: キーベースの認証でJWTトークンを自動発行
-- **権限管理**: キー毎の細かい権限設定
+**Features**:
+- **Anonymous Key**: Safe for frontend use
+- **Service Role Key**: Backend-only full permission key
+- **Automatic JWT Generation**: Key-based authentication with automatic JWT token issuance
+- **Permission Management**: Fine-grained permissions per key
 
-### 5. 🌐 Confluent Cloud対応
+### 5. 🌐 Confluent Cloud Support
 
-**対応内容**:
-- Confluent Cloud ksqlDBとの完全統合
-- Schema Registry連携
-- SSL/TLS接続サポート
-- 企業向けセキュリティ機能
+**Coverage**:
+- Full integration with Confluent Cloud ksqlDB
+- Schema Registry integration
+- SSL/TLS connection support
+- Enterprise security features
 
-### 6. 既存機能の改善
+### 6. Existing Feature Improvements
 
-#### 配列形式レスポンス問題の解決
-- `executePullQuery`にformat optionを追加
-- デフォルトで`format: 'object'`によりオブジェクト形式で返却
-- 後方互換性のため`format: 'array'`オプションも提供
+#### Array Format Response Issue Resolution
+- Added format option to `executePullQuery`
+- Default `format: 'object'` returns object format
+- Backward compatibility with `format: 'array'` option
 
-#### TypeScript型生成機能
-- ksqlDBスキーマから自動TypeScript型定義生成
-- 配列→オブジェクト変換用マッパー関数の自動生成
-- カラムメタデータの生成
-- CLIコマンドでの一括生成
+#### TypeScript Type Generation Feature
+- Automatic TypeScript type definition generation from ksqlDB schemas
+- Auto-generated mapper functions for array→object conversion
+- Column metadata generation
+- Bulk generation via CLI commands
 
-#### テーブル名重複問題の修正
-- 型生成時に`_table`、`_stream`サフィックスを自動除去
-- 特殊文字の適切な処理
-- より読みやすいインターフェース名の生成
+#### Table Name Duplication Issue Fix
+- Automatic removal of `_table`, `_stream` suffixes during type generation
+- Proper handling of special characters
+- Generation of more readable interface names
 
 ## 📚 Migration Guide
 
 ### v25.07.5 → v25.07.8
 
-#### 配列レスポンスを使用していた場合
+#### If you were using array responses
 
 ```typescript
 // Before (v25.07.5)
@@ -667,21 +667,21 @@ const users = result.data.map(row => ({
   email: row[2]
 }));
 
-// After (v25.07.8) - 自動変換
+// After (v25.07.8) - automatic conversion
 const result = await executePullQuery('SELECT * FROM users;');
-const users = result.data; // 既にオブジェクト形式
+const users = result.data; // already in object format
 
-// 配列形式が必要な場合
+// If array format is needed
 const result = await executePullQuery('SELECT * FROM users;', { format: 'array' });
 ```
 
-#### 型生成の追加
+#### Adding Type Generation
 
 ```bash
-# 型定義を生成
+# Generate type definitions
 npx gftd-orm generate-types --table USERS_TABLE --output ./types
 
-# TypeScriptファイルで使用
+# Use in TypeScript files
 import { UsersTable } from './types/users';
 ```
 
