@@ -22,6 +22,16 @@ export * from './http-client';
 export * from './type-generator';
 export { runCli } from './cli';
 
+// 🆕 NEW: Supabase-like Authentication & Security Features
+export * from './jwt-auth';
+export * from './anon-key-system';
+export * from './row-level-security';
+export * from './supabase-like-client';
+
+// 🔐 NEW: Auth0 Integration
+export * from './auth0-integration';
+export * from './auth0-supabase-client';
+
 // Import required modules for client implementation
 import { initializeKsqlDbClient, getClientConfig as getKsqlConfig } from './ksqldb-client';
 import { initializeSchemaRegistryClient, getSchemaRegistryConfig } from './schema-registry';

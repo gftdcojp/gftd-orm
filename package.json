@@ -89,11 +89,14 @@
     "axios": "^1.6.0",
     "commander": "^11.1.0",
     "dotenv": "^16.3.1",
+    "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^3.1.0",
     "uuid": "^9.0.1",
     "winston": "^3.11.0",
     "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.0",
     "@types/node": "^20.0.0",
     "@types/react": "^19.1.8",
     "@types/uuid": "^9.0.7",

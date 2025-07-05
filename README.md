@@ -238,7 +238,140 @@ const tables = await listAllTables();
 console.log('Available tables:', tables.map(t => t.name));
 ```
 
-### 4. 基本的な使用方法（従来機能）
+### 4. 🆕 Auth0統合の使用方法（最新機能）
+
+```typescript
+import { createAuth0Client, auth0 } from '@gftdcojp/gftd-orm';
+
+// 1. デフォルト設定でAuth0トークンを使用（設定不要）
+const auth0Token = "eyJ..."; // Auth0から取得したJWTトークン
+const client = createAuth0Client('http://localhost:8088', auth0Token);
+// デフォルト: gftd.jp.auth0.com ドメインを使用
+
+// 2. カスタムAuth0設定を使用する場合
+const customClient = createAuth0Client('http://localhost:8088', auth0Token, {
+  auth0Config: {
+    domain: 'your-custom.auth0.com',
+    audience: 'https://your-api-identifier',
+    clientId: 'your-custom-client-id',
+  }
+});
+
+// 3. 認証状態の確認
+console.log('認証状態:', {
+  isAuthenticated: client.auth.isAuthenticated,
+  user: client.auth.user,
+  error: client.auth.error,
+});
+
+// 4. 安全なデータアクセス（RLS自動適用）
+const { data, error } = await client.query(`
+  SELECT id, name, email, created_at 
+  FROM user_profiles 
+  WHERE status = 'active'
+`);
+
+// 5. 権限・ロールベースのアクセス制御
+if (client.hasPermission('read:sensitive_data')) {
+  const { data } = await client.query('SELECT * FROM sensitive_table');
+}
+
+if (client.hasRole('admin')) {
+  // 管理者のみアクセス可能な操作
+}
+
+// 6. リアルタイムストリーミング
+const subscription = await client.stream(
+  'SELECT * FROM user_activity EMIT CHANGES',
+  (update) => console.log('リアルタイム更新:', update)
+);
+
+// 7. Express.jsでのミドルウェア使用
+import { createAuth0Middleware } from '@gftdcojp/gftd-orm';
+
+// デフォルト設定でミドルウェア使用
+app.use('/api/protected', createAuth0Middleware({
+  requiredPermissions: ['read:data'],
+  requiredRoles: ['user'],
+}));
+
+// カスタムAuth0設定でミドルウェア使用
+app.use('/api/custom', createAuth0Middleware({
+  requiredPermissions: ['read:data'],
+  requiredRoles: ['user'],
+  auth0Config: {
+    domain: 'your-custom.auth0.com',
+    audience: 'https://your-api-identifier',
+  }
+}));
+
+app.get('/api/protected/users', async (req, res) => {
+  const { data } = await req.gftdClient.query('SELECT * FROM users');
+  res.json({ users: data });
+});
+```
+
+### 5. 🆕 Supabase風認証システムの使用方法（匿名キー）
+
+```typescript
+import { createClient, getKeys, rls } from '@gftdcojp/gftd-orm';
+
+// 1. 匿名キーを取得（初回起動時に自動生成）
+const keys = getKeys();
+console.log('公開可能な匿名キー:', keys.anonKey);
+console.log('サーバー専用キー:', keys.serviceRoleKey); // 絶対に公開しない
+
+// 2. クライアント作成（フロントエンド）
+const client = createClient('http://localhost:8088', keys.anonKey!, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+  }
+});
+
+// 3. 安全なデータアクセス（RLS自動適用）
+const { data, error } = await client.query(`
+  SELECT id, name, email, created_at 
+  FROM user_profiles 
+  WHERE status = 'active'
+`);
+
+if (error) {
+  console.error('アクセス拒否:', error);
+} else {
+  console.log('取得データ:', data);
+}
+
+// 4. リアルタイムストリーミング
+const subscription = await client.stream(
+  'SELECT * FROM user_activity EMIT CHANGES',
+  (update) => {
+    console.log('リアルタイム更新:', update);
+  }
+);
+
+// 5. RLSポリシーの設定（管理者のみ）
+rls.enableTableRLS('user_profiles');
+rls.createPolicy({
+  id: 'authenticated-user-access',
+  name: 'Authenticated User Access',
+  tableName: 'user_profiles',
+  policyType: 'SELECT',
+  roles: ['authenticated'],
+  condition: 'user_id = auth.user_id()',
+  description: 'Users can only see their own profile',
+  isActive: true,
+});
+
+// 6. 認証状態の確認
+console.log('認証情報:', {
+  isAuthenticated: client.auth.isAuthenticated,
+  isAnonymous: client.auth.isAnonymous,
+  user: client.auth.user,
+});
+```
+
+### 6. 基本的な使用方法（従来機能）
 
 ```typescript
 import { 
@@ -313,6 +446,12 @@ GFTD_SCHEMA_REGISTRY_AUTH_PASSWORD=admin
 GFTD_REALTIME_URL=ws://localhost:8088
 GFTD_REALTIME_API_KEY=your-realtime-api-key
 
+# Auth0 Integration (デフォルト値設定済み - 必要な場合のみ上書き)
+AUTH0_DOMAIN=gftd.jp.auth0.com
+AUTH0_AUDIENCE=https://gftd.jp.auth0.com/api/v2/
+AUTH0_CLIENT_ID=k0ziPQ6IkDxE1AUSvzx5PwXtnf4y81x0
+AUTH0_JWKS_URI=https://gftd.jp.auth0.com/.well-known/jwks.json
+
 # Audit Logging
 GFTD_AUDIT_ENABLED=true
 GFTD_AUDIT_LOG_FILE=./logs/audit.log
@@ -320,6 +459,28 @@ GFTD_AUDIT_LOG_FILE=./logs/audit.log
 # Rate Limiting
 GFTD_RATE_LIMIT_WINDOW_MS=60000
 GFTD_RATE_LIMIT_MAX_REQUESTS=100
+```
+
+### 🔐 Auth0設定について
+
+**デフォルト設定**:
+- `AUTH0_DOMAIN`: `gftd.jp.auth0.com` （設定済み）
+- `AUTH0_CLIENT_ID`: `k0ziPQ6IkDxE1AUSvzx5PwXtnf4y81x0` （設定済み）
+
+環境変数での設定は**オプション**です。異なるAuth0テナントを使用する場合のみ設定してください。
+
+**プログラムでの設定**:
+```typescript
+// デフォルト設定使用（推奨）
+const client = createAuth0Client(ksqlDbUrl, auth0Token);
+
+// カスタム設定使用
+const client = createAuth0Client(ksqlDbUrl, auth0Token, {
+  auth0Config: {
+    domain: 'your-custom.auth0.com',
+    audience: 'https://your-api-identifier',
+  }
+});
 ```
 
 ## 📋 Available Commands
@@ -374,36 +535,104 @@ pnpm cli:generate-all                     # 全テーブル型生成
 - [ ] **VS Code Extension** - IDE integration for type generation
 - [ ] **Watch Mode** - Automatic type regeneration on schema changes
 
-## 🆕 v25.07.6 新機能詳細
+## 🆕 v25.07.8 新機能詳細
 
-### 1. 配列形式レスポンス問題の解決
+### 1. 🔐 Auth0統合システム（最新機能）
 
-**問題**: ksqlDBクエリの結果が配列形式で返され、手動でオブジェクトにマッピングする必要があった。
+**実装内容**:
+- **Auth0 JWT検証**: JWKS（JSON Web Key Set）を使った安全なトークン検証
+- **自動ユーザーマッピング**: Auth0クレームをGFTD ORMユーザーペイロードに変換
+- **権限・ロール連携**: Auth0のカスタムクレームによる細かいアクセス制御
+- **RLS自動適用**: Auth0ユーザー情報に基づくRow Level Security
 
-**解決**: 
+**使用例**:
+```typescript
+import { createAuth0Client } from '@gftdcojp/gftd-orm';
+
+// Auth0トークンで認証（既存のAuth0システムと完全統合）
+const client = createAuth0Client('http://localhost:8088', auth0Token);
+
+// 権限に基づく安全なデータアクセス
+if (client.hasPermission('read:data')) {
+  const { data } = await client.query('SELECT * FROM users');
+}
+```
+
+### 2. 🔐 Supabase風認証システム（新機能）
+
+**実装内容**:
+- **JWT認証システム**: トークン生成・検証・リフレッシュ機能
+- **匿名キーシステム**: 公開可能な匿名キーとサービスロールキー
+- **Row Level Security (RLS)**: ksqlDBクエリの動的フィルタリング
+- **統合クライアント**: Supabaseと同様のAPI設計
+
+**使用例**:
+```typescript
+import { createClient, getKeys } from '@gftdcojp/gftd-orm';
+
+// 匿名キーで安全にアクセス（公開可能）
+const keys = getKeys();
+const client = createClient('http://localhost:8088', keys.anonKey!);
+
+// RLSが自動適用されたクエリ実行
+const { data, error } = await client.query('SELECT * FROM users');
+```
+
+### 3. 🛡️ Row Level Security (RLS)
+
+**機能**:
+- テーブル単位でのアクセス制御
+- ユーザーロール基盤のポリシー管理
+- 動的なWHERE句の自動追加
+- Supabase互換のポリシー記法
+
+**ポリシー例**:
+```typescript
+import { rls } from '@gftdcojp/gftd-orm';
+
+// ユーザーが自分のデータのみアクセス可能
+rls.createPolicy({
+  id: 'user-owns-data',
+  name: 'User Owns Data',
+  tableName: 'user_profiles',
+  policyType: 'SELECT',
+  roles: ['authenticated'],
+  condition: 'user_id = auth.user_id()',
+  description: 'Users can only access their own data',
+  isActive: true,
+});
+```
+
+### 4. 🔑 匿名キーシステム
+
+**特徴**:
+- **匿名キー**: フロントエンドで安全に使用可能
+- **サービスロールキー**: バックエンド専用の全権限キー
+- **自動JWT生成**: キーベースの認証でJWTトークンを自動発行
+- **権限管理**: キー毎の細かい権限設定
+
+### 5. 🌐 Confluent Cloud対応
+
+**対応内容**:
+- Confluent Cloud ksqlDBとの完全統合
+- Schema Registry連携
+- SSL/TLS接続サポート
+- 企業向けセキュリティ機能
+
+### 6. 既存機能の改善
+
+#### 配列形式レスポンス問題の解決
 - `executePullQuery`にformat optionを追加
 - デフォルトで`format: 'object'`によりオブジェクト形式で返却
 - 後方互換性のため`format: 'array'`オプションも提供
 
-### 2. TypeScript型生成機能
-
-**機能**:
+#### TypeScript型生成機能
 - ksqlDBスキーマから自動TypeScript型定義生成
 - 配列→オブジェクト変換用マッパー関数の自動生成
 - カラムメタデータの生成
 - CLIコマンドでの一括生成
 
-**利点**:
-- コンパイル時型チェック
-- IDE支援とインテリセンス
-- スキーマ変更時の自動更新
-- ランタイムエラーの防止
-
-### 3. テーブル名重複問題の修正
-
-**問題**: `TABLE_table`のような重複が発生
-
-**解決**: 
+#### テーブル名重複問題の修正
 - 型生成時に`_table`、`_stream`サフィックスを自動除去
 - 特殊文字の適切な処理
 - より読みやすいインターフェース名の生成
